@@ -44,7 +44,8 @@ export function applyOp(data: AppData, op: Op): AppData {
       next = rows.filter((r) => r.id !== op.id);
       break;
   }
-  return { ...data, [key]: next };
+  const out = { ...data, [key]: next } as AppData;
+  return op.kind === "remove" ? cascade(out, op.table, op.id) : out;
 }
 
 export function applyOps(data: AppData, ops: Op[]): AppData {
@@ -53,3 +54,31 @@ export function applyOps(data: AppData, ops: Op[]): AppData {
 
 /** Tables whose writes are "logs" (shown as queued while offline). */
 export const LOG_TABLES: TableName[] = ["metric_entries", "task_completions", "checkins"];
+
+/** Mirror the database's ON DELETE CASCADE rules for in-memory/local data. */
+function cascade(d: AppData, table: TableName, id: string): AppData {
+  if (table === "goals") {
+    const metricIds = new Set(d.metrics.filter((m) => m.goalId === id).map((m) => m.id));
+    const taskIds = new Set(d.tasks.filter((t) => t.goalId === id).map((t) => t.id));
+    return {
+      ...d,
+      metrics: d.metrics.filter((m) => m.goalId !== id),
+      entries: d.entries.filter((e) => !metricIds.has(e.metricId)),
+      milestones: d.milestones.filter((m) => m.goalId !== id),
+      tasks: d.tasks.filter((t) => t.goalId !== id),
+      completions: d.completions.filter((c) => !taskIds.has(c.taskId)),
+      adjustments: d.adjustments.filter((a) => a.goalId !== id),
+      reviews: d.reviews.filter((r) => r.goalId !== id),
+      partnerships: d.partnerships.map((p) => (p.goalIds.includes(id) ? { ...p, goalIds: p.goalIds.filter((g) => g !== id) } : p)),
+    };
+  }
+  if (table === "metrics") {
+    return {
+      ...d,
+      entries: d.entries.filter((e) => e.metricId !== id),
+      milestones: d.milestones.map((m) => (m.metricId === id ? { ...m, metricId: null } : m)),
+    };
+  }
+  if (table === "tasks") return { ...d, completions: d.completions.filter((c) => c.taskId !== id) };
+  return d;
+}

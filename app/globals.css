@@ -1,26 +1,150 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Theme tokens. Dark is the default and the primary design target.
+ * Palette priority: black base → red primary → blue secondary → yellow rewards.
+ * All text/background pairs were checked for WCAG AA contrast.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light mode */
+  --background: #fafafa;
+  --surface-1: #ffffff;
+  --surface-2: #f4f4f5;
+  --surface-3: #e9e9ec;
+  --foreground: #0a0a0b;
+  --muted-foreground: #52525b;
+  --border: #e4e4e7;
+  --ring: #1f6feb;
+
+  --red: #d13438;
+  --red-strong: #b8262b;
+  --blue: #1f6feb;
+  --yellow: #946800;
+  --yellow-fill: #f5c542;
+  --orange: #c2410c;
+
+  --primary: var(--red-strong);
+  --primary-foreground: #ffffff;
+  --chart-grid: #e4e4e7;
+}
+
+.dark {
+  --background: #0a0a0b;
+  --surface-1: #141416;
+  --surface-2: #1c1c1f;
+  --surface-3: #26262a;
+  --foreground: #f4f4f5;
+  --muted-foreground: #a1a1aa;
+  --border: #2a2a2e;
+  --ring: #3e8ef7;
+
+  --red: #e5484d;
+  --red-strong: #ce2c31;
+  --blue: #3e8ef7;
+  --yellow: #f5c542;
+  --yellow-fill: #f5c542;
+  --orange: #f76b15;
+
+  --primary: var(--red-strong);
+  --primary-foreground: #ffffff;
+  --chart-grid: #232327;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-card: var(--surface-1);
+  --color-popover: var(--surface-2);
+  --color-muted: var(--surface-2);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-red: var(--red);
+  --color-red-strong: var(--red-strong);
+  --color-blue: var(--blue);
+  --color-yellow: var(--yellow);
+  --color-yellow-fill: var(--yellow-fill);
+  --color-orange: var(--orange);
+  /* Status colors (always paired with an icon + label in the UI) */
+  --color-ahead: var(--yellow);
+  --color-on-track: var(--blue);
+  --color-behind: var(--orange);
+  --color-at-risk: var(--red);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+
+  --animate-float: float 3s ease-in-out infinite;
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    color-scheme: dark;
+  }
+  html:not(.dark) {
+    color-scheme: light;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Respect reduced motion everywhere (Framer Motion also checks this). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Recharts focus outline cleanup */
+.recharts-wrapper:focus,
+.recharts-surface:focus {
+  outline: none;
 }
