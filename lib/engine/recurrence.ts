@@ -96,6 +96,8 @@ export function describeRecurrence(rec: Recurrence): string {
     case "weekdays":
       return rec.days.map((d) => names[d]).join(", ");
     case "every_n_weeks":
-      return rec.interval === 1 ? `Every ${names[rec.weekday]}` : `Every ${rec.interval} weeks on ${names[rec.weekday]}`;
+      return rec.interval === 1
+        ? `Every ${names[rec.weekday]}`
+        : `Every ${rec.interval} weeks on ${names[rec.weekday]}`;
   }
 }

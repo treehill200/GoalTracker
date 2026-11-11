@@ -4,7 +4,15 @@
  * computes analyses with the engine, and exposes domain actions.
  */
 import { useRouter } from "next/navigation";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
 import { analyzeGoal, type GoalAnalysis } from "@/lib/engine/analyze";
 import { averageMood } from "@/lib/engine/mood";
@@ -52,31 +60,64 @@ export function useOptionalStore(): StoreValue | null {
   return useContext(StoreCtx);
 }
 
-export function analyzeAll(data: AppData, today: DateStr, skipHistory = false): Map<string, GoalAnalysis> {
+export function analyzeAll(
+  data: AppData,
+  today: DateStr,
+  skipHistory = false,
+): Map<string, GoalAnalysis> {
   const out = new Map<string, GoalAnalysis>();
   const weekAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
   const recentBadges = data.userBadges.filter((b) => b.earnedAt > weekAgo).length;
   for (const g of data.goals) {
     const b = bundleFor(data, g.id);
-    if (b) out.set(g.id, analyzeGoal(b, { today, frozenDays: data.profile.settings.frozenDays, extraWins: recentBadges, skipHistory }));
+    if (b)
+      out.set(
+        g.id,
+        analyzeGoal(b, {
+          today,
+          frozenDays: data.profile.settings.frozenDays,
+          extraWins: recentBadges,
+          skipHistory,
+        }),
+      );
   }
   return out;
 }
 
 async function showSystemNotification(title: string, body: string, href?: string) {
-  if (typeof window === "undefined" || !("Notification" in window) || Notification.permission !== "granted") return;
+  if (
+    typeof window === "undefined" ||
+    !("Notification" in window) ||
+    Notification.permission !== "granted"
+  )
+    return;
   try {
     const reg = await navigator.serviceWorker?.getRegistration();
-    if (reg) await reg.showNotification(title, { body, icon: "/icons/icon-192.png", badge: "/icons/badge-72.png", data: { href: href ?? "/" } });
+    if (reg)
+      await reg.showNotification(title, {
+        body,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/badge-72.png",
+        data: { href: href ?? "/" },
+      });
     else new Notification(title, { body });
   } catch {
     /* notifications blocked */
   }
 }
 
-type Status = { state: "loading" } | { state: "error"; message: string } | { state: "ready"; repo: Repository; outbox: Outbox };
+type Status =
+  | { state: "loading" }
+  | { state: "error"; message: string }
+  | { state: "ready"; repo: Repository; outbox: Outbox };
 
-export function StoreProvider({ children, fallback }: { children: React.ReactNode; fallback: React.ReactNode }) {
+export function StoreProvider({
+  children,
+  fallback,
+}: {
+  children: React.ReactNode;
+  fallback: React.ReactNode;
+}) {
   const features = useFeatures();
   const router = useRouter();
   const [status, setStatus] = useState<Status>({ state: "loading" });
@@ -124,7 +165,10 @@ export function StoreProvider({ children, fallback }: { children: React.ReactNod
         }
         // Re-apply anything still waiting in the outbox.
         const queued = await outbox.all();
-        loaded = applyOps(loaded, queued.map((q) => q.op));
+        loaded = applyOps(
+          loaded,
+          queued.map((q) => q.op),
+        );
         if (loaded.profile.timezone === "UTC") {
           const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
           if (tz && tz !== "UTC") {
@@ -139,7 +183,8 @@ export function StoreProvider({ children, fallback }: { children: React.ReactNod
         setStatus({ state: "ready", repo, outbox });
         if (navigator.onLine) outbox.flush(repo).catch(() => undefined);
       } catch (err) {
-        if (!cancelled) setStatus({ state: "error", message: err instanceof Error ? err.message : String(err) });
+        if (!cancelled)
+          setStatus({ state: "error", message: err instanceof Error ? err.message : String(err) });
       }
     })();
     return () => {
@@ -217,7 +262,9 @@ export function StoreProvider({ children, fallback }: { children: React.ReactNod
 
   const celebrate = useCallback((list: Celebration[]) => {
     const big = list.filter((c) => c.type !== "xp");
-    for (const c of list) if (c.type === "xp") toast(`+${c.amount} XP · +${c.coins} coins`, { description: c.reason, duration: 1800 });
+    for (const c of list)
+      if (c.type === "xp")
+        toast(`+${c.amount} XP · +${c.coins} coins`, { description: c.reason, duration: 1800 });
     if (big.length) setCelebrations((cur) => [...cur, ...big]);
   }, []);
 
@@ -236,13 +283,17 @@ export function StoreProvider({ children, fallback }: { children: React.ReactNod
     [commit, celebrate, systemNotify],
   );
 
-  const analyses = useMemo(() => (data ? analyzeAll(data, today) : new Map<string, GoalAnalysis>()), [data, today]);
+  const analyses = useMemo(
+    () => (data ? analyzeAll(data, today) : new Map<string, GoalAnalysis>()),
+    [data, today],
+  );
 
   // ---- maintenance: on load and every minute
   const maintenanceKey = `${today}-${tick}-${status.state}`;
   const lastMaintenance = useRef("");
   useEffect(() => {
-    if (status.state !== "ready" || !dataRef.current || lastMaintenance.current === maintenanceKey) return;
+    if (status.state !== "ready" || !dataRef.current || lastMaintenance.current === maintenanceKey)
+      return;
     lastMaintenance.current = maintenanceKey;
     const d = dataRef.current;
     const r = runMaintenance(d, analyzeAll(d, today, true), today, timeInZone(d.profile.timezone));
@@ -259,16 +310,21 @@ export function StoreProvider({ children, fallback }: { children: React.ReactNod
     if (!data || status.state !== "ready") return null;
     const active = data.goals.filter((g) => g.status === "active");
     const focusGoalId =
-      data.profile.settings.focusGoalId && active.some((g) => g.id === data.profile.settings.focusGoalId)
+      data.profile.settings.focusGoalId &&
+      active.some((g) => g.id === data.profile.settings.focusGoalId)
         ? data.profile.settings.focusGoalId
         : (active[0]?.id ?? null);
-    const moods = active.map((g) => analyses.get(g.id)?.mood.mood).filter((m): m is CoachMood => Boolean(m));
+    const moods = active
+      .map((g) => analyses.get(g.id)?.mood.mood)
+      .filter((m): m is CoachMood => Boolean(m));
     return {
       data,
       today,
       analyses,
       streak: overallStreak(data, today),
-      mood: focusGoalId ? (analyses.get(focusGoalId)?.mood.mood ?? averageMood(moods)) : averageMood(moods),
+      mood: focusGoalId
+        ? (analyses.get(focusGoalId)?.mood.mood ?? averageMood(moods))
+        : averageMood(moods),
       focusGoalId,
       repo: status.repo,
       pending,

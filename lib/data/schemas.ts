@@ -19,7 +19,10 @@ export const MetricDraftSchema = z
     weeklyTarget: finite.nullable().default(null),
     isKey: z.boolean().default(false),
   })
-  .refine((m) => m.aggregation !== "weekly_sum" || m.target > 0, { message: "Weekly target must be above 0", path: ["target"] });
+  .refine((m) => m.aggregation !== "weekly_sum" || m.target > 0, {
+    message: "Weekly target must be above 0",
+    path: ["target"],
+  });
 
 export const MilestoneDraftSchema = z.object({
   id: z.string().optional(),
@@ -53,17 +56,34 @@ export const GoalDraftSchema = z
     expectedCurve: z.enum(["linear", "slow_start"]).default("linear"),
     milestoneWeight: z.number().min(0).max(100).default(0),
     taskWeight: z.number().min(0).max(100).default(0),
-    reminderTime: z.string().regex(/^\d{2}:\d{2}$/).nullable().default(null),
+    reminderTime: z
+      .string()
+      .regex(/^\d{2}:\d{2}$/)
+      .nullable()
+      .default(null),
     color: z.string().nullable().default(null),
     metrics: z.array(MetricDraftSchema).max(12),
     milestones: z.array(MilestoneDraftSchema).max(30),
     tasks: z.array(TaskDraftSchema).max(20),
   })
-  .refine((g) => g.isOpenEnded || g.deadline !== null, { message: "Pick a deadline or make it open-ended", path: ["deadline"] })
-  .refine((g) => !g.deadline || g.deadline > g.startDate, { message: "Deadline must be after the start date", path: ["deadline"] })
-  .refine((g) => g.metrics.length + g.milestones.length + g.tasks.length > 0, { message: "Add at least one metric, milestone or task", path: ["metrics"] })
+  .refine((g) => g.isOpenEnded || g.deadline !== null, {
+    message: "Pick a deadline or make it open-ended",
+    path: ["deadline"],
+  })
+  .refine((g) => !g.deadline || g.deadline > g.startDate, {
+    message: "Deadline must be after the start date",
+    path: ["deadline"],
+  })
+  .refine((g) => g.metrics.length + g.milestones.length + g.tasks.length > 0, {
+    message: "Add at least one metric, milestone or task",
+    path: ["metrics"],
+  })
   .refine(
-    (g) => g.metrics.reduce((a, m) => a + m.weight, 0) + (g.milestones.length ? g.milestoneWeight : 0) + (g.tasks.length ? g.taskWeight : 0) > 0,
+    (g) =>
+      g.metrics.reduce((a, m) => a + m.weight, 0) +
+        (g.milestones.length ? g.milestoneWeight : 0) +
+        (g.tasks.length ? g.taskWeight : 0) >
+      0,
     { message: "At least one component needs a weight above 0", path: ["metrics"] },
   );
 
@@ -89,7 +109,9 @@ export const RewardInputSchema = z.object({
 });
 
 export const ParsedLogSchema = z.object({
-  entries: z.array(z.object({ metricId: z.string(), value: finite, label: z.string().optional() })).max(20),
+  entries: z
+    .array(z.object({ metricId: z.string(), value: finite, label: z.string().optional() }))
+    .max(20),
   completions: z.array(z.object({ taskId: z.string(), label: z.string().optional() })).max(20),
   unmatched: z.array(z.string()).max(20),
 });
@@ -117,7 +139,13 @@ export const AiBreakdownSchema = z.object({
     .min(1)
     .max(6),
   milestones: z
-    .array(z.object({ title: z.string().min(1).max(160), weeksFromStart: z.number().min(0).max(520), thresholdValue: z.number().nullable() }))
+    .array(
+      z.object({
+        title: z.string().min(1).max(160),
+        weeksFromStart: z.number().min(0).max(520),
+        thresholdValue: z.number().nullable(),
+      }),
+    )
     .max(10),
   milestoneWeight: z.number().min(0).max(1),
   tasks: z
@@ -136,6 +164,10 @@ export const AiBreakdownSchema = z.object({
 export type AiBreakdown = z.infer<typeof AiBreakdownSchema>;
 
 export const AiQuestionsSchema = z.object({
-  questions: z.array(z.object({ id: z.string(), question: z.string().max(200), placeholder: z.string().max(100) })).max(3),
+  questions: z
+    .array(
+      z.object({ id: z.string(), question: z.string().max(200), placeholder: z.string().max(100) }),
+    )
+    .max(3),
 });
 export type AiQuestions = z.infer<typeof AiQuestionsSchema>;

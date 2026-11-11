@@ -7,7 +7,10 @@ import { cn } from "@/lib/utils";
 export function Checkbox({ className, ...props }: React.ComponentProps<typeof C.Root>) {
   return (
     <C.Root
-      className={cn("flex size-6 shrink-0 items-center justify-center rounded-md border-2 border-muted-foreground/60 transition data-[state=checked]:border-red data-[state=checked]:bg-red", className)}
+      className={cn(
+        "border-muted-foreground/60 data-[state=checked]:border-red data-[state=checked]:bg-red flex size-6 shrink-0 items-center justify-center rounded-md border-2 transition",
+        className,
+      )}
       {...props}
     >
       <C.Indicator>

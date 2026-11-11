@@ -49,17 +49,28 @@ export default function SharePage() {
       };
     }
     const repo = new LocalRepository();
-    return { get: () => repo.getSharedView(token), cheer: (c: Parameters<typeof sendCheerRpc>[2]) => repo.sendCheer(token, c) };
+    return {
+      get: () => repo.getSharedView(token),
+      cheer: (c: Parameters<typeof sendCheerRpc>[2]) => repo.sendCheer(token, c),
+    };
   }, [features, token]);
 
   useEffect(() => {
-    load.get().then(setView).catch(() => setView(null));
+    load
+      .get()
+      .then(setView)
+      .catch(() => setView(null));
   }, [load]);
 
   async function cheer(goalId: string | null) {
     setSending(true);
     try {
-      await load.cheer({ fromName: from.trim() || "A friend", emoji, message: message.trim() || null, goalId });
+      await load.cheer({
+        fromName: from.trim() || "A friend",
+        emoji,
+        message: message.trim() || null,
+        goalId,
+      });
       toast.success("Cheer sent! 🎉");
       setMessage("");
       setView(await load.get());
@@ -75,16 +86,21 @@ export default function SharePage() {
       <header className="flex items-center gap-2">
         <LogoMark />
         <span className="font-bold">Goal Tracker</span>
-        <span className="ml-auto text-xs text-muted-foreground">Read-only partner view</span>
+        <span className="text-muted-foreground ml-auto text-xs">Read-only partner view</span>
       </header>
       {view === undefined ? (
         <div className="flex justify-center py-20">
-          <Loader2 className="size-6 animate-spin text-muted-foreground" aria-label="Loading" />
+          <Loader2 className="text-muted-foreground size-6 animate-spin" aria-label="Loading" />
         </div>
       ) : view === null ? (
         <Card className="py-12 text-center">
           <h1 className="text-xl font-bold">This link isn&apos;t active</h1>
-          <p className="mt-1 text-sm text-muted-foreground">It may have been revoked by its owner.{features.demo ? " In demo mode, share links only work in the browser that created them." : ""}</p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            It may have been revoked by its owner.
+            {features.demo
+              ? " In demo mode, share links only work in the browser that created them."
+              : ""}
+          </p>
           <Button asChild className="mt-4">
             <Link href="/">Start your own goals</Link>
           </Button>
@@ -93,7 +109,7 @@ export default function SharePage() {
         <>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{view.ownerName}&apos;s goals</h1>
-            <p className="text-sm text-muted-foreground">Level {view.level} · cheer them on!</p>
+            <p className="text-muted-foreground text-sm">Level {view.level} · cheer them on!</p>
           </div>
           {view.goals.map((b) => {
             const a = analyzeGoal(b, { today });
@@ -101,22 +117,43 @@ export default function SharePage() {
             return (
               <Card key={b.goal.id} className="space-y-4">
                 <div className="flex flex-wrap items-center gap-4">
-                  <ScoreRing value={a.score} expected={a.expectedScore} size={110} stroke={11} label={`${b.goal.title} score`} sublabel="score" />
+                  <ScoreRing
+                    value={a.score}
+                    expected={a.expectedScore}
+                    size={110}
+                    stroke={11}
+                    label={`${b.goal.title} score`}
+                    sublabel="score"
+                  />
                   <div className="min-w-0 flex-1">
                     <h2 className="text-lg font-bold">{b.goal.title}</h2>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
                       <StatusPill status={a.status} completed={a.completed} />
                       <span className="flex items-center gap-1">
-                        <StreakFlame active={a.streak.activeToday} size={16} /> {a.streak.current}-day streak
+                        <StreakFlame active={a.streak.activeToday} size={16} /> {a.streak.current}
+                        -day streak
                       </span>
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">{a.projection.date ? `On pace to finish ${fmtDate(a.projection.date)}` : "Building momentum"}</p>
+                    <p className="text-muted-foreground mt-1 text-sm">
+                      {a.projection.date
+                        ? `On pace to finish ${fmtDate(a.projection.date)}`
+                        : "Building momentum"}
+                    </p>
                   </div>
                   <Button variant="yellow" onClick={() => cheer(b.goal.id)} disabled={sending}>
                     <PartyPopper /> Cheer {emoji}
                   </Button>
                 </div>
-                {key ? <ForecastChart m={key} start={b.goal.startDate} deadline={a.effectiveDeadline} today={today} curve={b.goal.expectedCurve} height={220} /> : null}
+                {key ? (
+                  <ForecastChart
+                    m={key}
+                    start={b.goal.startDate}
+                    deadline={a.effectiveDeadline}
+                    today={today}
+                    curve={b.goal.expectedCurve}
+                    height={220}
+                  />
+                ) : null}
                 <ConsistencyHeatmap days={a.heatmap} label={b.goal.title} />
               </Card>
             );
@@ -125,27 +162,46 @@ export default function SharePage() {
             <h2 className="font-semibold">Send a cheer</h2>
             <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Reaction">
               {EMOJI.map((e) => (
-                <button key={e} role="radio" aria-checked={emoji === e} onClick={() => setEmoji(e)} className={`rounded-lg border p-2 text-2xl ${emoji === e ? "border-yellow bg-yellow-fill/10" : "border-border"}`}>
+                <button
+                  key={e}
+                  role="radio"
+                  aria-checked={emoji === e}
+                  onClick={() => setEmoji(e)}
+                  className={`rounded-lg border p-2 text-2xl ${emoji === e ? "border-yellow bg-yellow-fill/10" : "border-border"}`}
+                >
                   {e}
                 </button>
               ))}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Your name" htmlFor="c-name">
-                <Input id="c-name" value={from} onChange={(e) => setFrom(e.target.value)} placeholder={view.partnerName ?? "Your name"} maxLength={60} />
+                <Input
+                  id="c-name"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                  placeholder={view.partnerName ?? "Your name"}
+                  maxLength={60}
+                />
               </Field>
               <Field label="Message (optional)" htmlFor="c-msg">
-                <Input id="c-msg" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={280} placeholder="You've got this!" />
+                <Input
+                  id="c-msg"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  maxLength={280}
+                  placeholder="You've got this!"
+                />
               </Field>
             </div>
             <Button onClick={() => cheer(view.goals[0]?.goal.id ?? null)} disabled={sending}>
               Send {emoji}
             </Button>
             {view.cheers.length ? (
-              <ul className="space-y-1 border-t border-border pt-3 text-sm">
+              <ul className="border-border space-y-1 border-t pt-3 text-sm">
                 {view.cheers.slice(0, 8).map((c) => (
                   <li key={c.id}>
-                    {c.emoji} <strong>{c.fromName}</strong> {c.message ?? ""} <span className="text-xs text-muted-foreground">{timeAgo(c.createdAt)}</span>
+                    {c.emoji} <strong>{c.fromName}</strong> {c.message ?? ""}{" "}
+                    <span className="text-muted-foreground text-xs">{timeAgo(c.createdAt)}</span>
                   </li>
                 ))}
               </ul>

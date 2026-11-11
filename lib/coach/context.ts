@@ -5,10 +5,17 @@
 import type { GoalAnalysis } from "@/lib/engine/analyze";
 import type { AppData } from "@/lib/data/types";
 
-const r = (x: number | null | undefined, d = 1) => (x === null || x === undefined || !Number.isFinite(x) ? null : Math.round(x * 10 ** d) / 10 ** d);
+const r = (x: number | null | undefined, d = 1) =>
+  x === null || x === undefined || !Number.isFinite(x) ? null : Math.round(x * 10 ** d) / 10 ** d;
 
-export function buildCoachContext(data: AppData, analyses: Map<string, GoalAnalysis>, today: string) {
-  const recentMoods = data.checkins.filter((c) => c.date > today.slice(0, 8) + "00").map((c) => c.mood);
+export function buildCoachContext(
+  data: AppData,
+  analyses: Map<string, GoalAnalysis>,
+  today: string,
+) {
+  const recentMoods = data.checkins
+    .filter((c) => c.date > today.slice(0, 8) + "00")
+    .map((c) => c.mood);
   return {
     today,
     user: {
@@ -17,7 +24,9 @@ export function buildCoachContext(data: AppData, analyses: Map<string, GoalAnaly
       xp: data.profile.xp,
       coins: data.profile.coins,
       streakFreezes: data.profile.streakFreezes,
-      avgMoodThisMonth: recentMoods.length ? r(recentMoods.reduce((a, b) => a + b, 0) / recentMoods.length) : null,
+      avgMoodThisMonth: recentMoods.length
+        ? r(recentMoods.reduce((a, b) => a + b, 0) / recentMoods.length)
+        : null,
     },
     goals: data.goals
       .filter((g) => g.status === "active" || g.status === "paused")
@@ -51,8 +60,12 @@ export function buildCoachContext(data: AppData, analyses: Map<string, GoalAnaly
             observedPerWeek: r(m.observedPerWeek, 2),
             weeklyTarget: r(m.plannedPerWeek, 2),
           })),
-          nextMilestone: a?.milestones.find((m) => m.state === "next" || m.state === "overdue")?.milestone.title ?? null,
-          tasksDueToday: a?.todayTasks.filter((t) => t.due && !t.doneToday).map((t) => t.task.title),
+          nextMilestone:
+            a?.milestones.find((m) => m.state === "next" || m.state === "overdue")?.milestone
+              .title ?? null,
+          tasksDueToday: a?.todayTasks
+            .filter((t) => t.due && !t.doneToday)
+            .map((t) => t.task.title),
         };
       }),
   };

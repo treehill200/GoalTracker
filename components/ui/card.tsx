@@ -2,11 +2,18 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export function Card({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("bg-card rounded-xl border border-border p-4 sm:p-5", className)} {...props} />;
+  return (
+    <div
+      className={cn("bg-card border-border min-w-0 rounded-xl border p-4 sm:p-5", className)}
+      {...props}
+    />
+  );
 }
 
 export function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("mb-3 flex items-start justify-between gap-3", className)} {...props} />;
+  return (
+    <div className={cn("mb-3 flex items-start justify-between gap-3", className)} {...props} />
+  );
 }
 
 export function CardTitle({ className, ...props }: React.ComponentProps<"h3">) {

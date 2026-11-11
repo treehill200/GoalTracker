@@ -117,7 +117,9 @@ export class LocalRepository implements Repository {
       partnerName: p.partnerName,
       partnershipId: p.id,
       level: d.profile.level,
-      goals: p.goalIds.map((id) => bundleFor(d, id)).filter((b): b is NonNullable<typeof b> => b !== null),
+      goals: p.goalIds
+        .map((id) => bundleFor(d, id))
+        .filter((b): b is NonNullable<typeof b> => b !== null),
       cheers: d.cheers.filter((c) => c.partnershipId === p.id),
     };
   }
@@ -127,7 +129,13 @@ export class LocalRepository implements Repository {
     const p = d.partnerships.find((x) => x.shareToken === token && x.status === "active");
     if (!p) throw new Error("This share link is no longer active.");
     const now = new Date().toISOString();
-    const cheer: Cheer = { id: uid(), userId: d.profile.id, partnershipId: p.id, createdAt: now, ...input };
+    const cheer: Cheer = {
+      id: uid(),
+      userId: d.profile.id,
+      partnershipId: p.id,
+      createdAt: now,
+      ...input,
+    };
     const goal = d.goals.find((g) => g.id === input.goalId);
     const note: AppNotification = {
       id: uid(),

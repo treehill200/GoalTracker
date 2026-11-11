@@ -1,13 +1,26 @@
 import { describe, expect, it } from "vitest";
 import { addDays } from "@/lib/engine/dates";
-import { ADJUST_CAP, computeAdjustment, isMeaningfulChange, originalWeeklyTarget } from "@/lib/engine/adjust";
+import {
+  ADJUST_CAP,
+  computeAdjustment,
+  isMeaningfulChange,
+  originalWeeklyTarget,
+} from "@/lib/engine/adjust";
 import { daysSince, driftLevel, rescuePlan, roundNice } from "@/lib/engine/drift";
 import { checkRealism } from "@/lib/engine/realism";
 
 const today = "2026-03-01";
 
 describe("auto-adjust", () => {
-  const base = { baseline: 0, target: 100, startDate: addDays(today, -50), deadline: addDays(today, 50), today, currentWeekly: null, originalWeekly: null };
+  const base = {
+    baseline: 0,
+    target: 100,
+    startDate: addDays(today, -50),
+    deadline: addDays(today, 50),
+    today,
+    currentWeekly: null,
+    originalWeekly: null,
+  };
   it("derives the original weekly target from the plan", () => {
     expect(originalWeeklyTarget(0, 100, base.startDate, base.deadline)).toBeCloseTo(7);
   });
@@ -35,7 +48,9 @@ describe("auto-adjust", () => {
     expect(computeAdjustment({ ...base, target: 0, current: 0 }).kind).toBe("none");
   });
   it("forces a choice once the deadline has passed", () => {
-    expect(computeAdjustment({ ...base, deadline: addDays(today, -1), current: 50 }).kind).toBe("choice");
+    expect(computeAdjustment({ ...base, deadline: addDays(today, -1), current: 50 }).kind).toBe(
+      "choice",
+    );
   });
   it("ignores tiny changes", () => {
     expect(isMeaningfulChange(10, 10.1)).toBe(false);
@@ -56,11 +71,27 @@ describe("drift", () => {
     expect(daysSince(addDays(today, 2), today, today)).toBe(0);
   });
   it("offers a smaller restart target and pushes the deadline", () => {
-    const p = rescuePlan({ current: 1220, target: 1500, weeklyTarget: 12, today, deadline: addDays(today, 30), daysAway: 15, unit: "points" });
+    const p = rescuePlan({
+      current: 1220,
+      target: 1500,
+      weeklyTarget: 12,
+      today,
+      deadline: addDays(today, 30),
+      daysAway: 15,
+      unit: "points",
+    });
     expect(p.restartTarget).toBe(1232);
     expect(p.restartBy).toBe(addDays(today, 14));
     expect(p.newDeadline).toBe(addDays(today, 45));
-    const open = rescuePlan({ current: 160, target: 150, weeklyTarget: null, today, deadline: null, daysAway: 20, unit: "lb" });
+    const open = rescuePlan({
+      current: 160,
+      target: 150,
+      weeklyTarget: null,
+      today,
+      deadline: null,
+      daysAway: 20,
+      unit: "lb",
+    });
     expect(open.restartTarget).toBe(159);
     expect(open.newDeadline).toBeNull();
   });
@@ -72,7 +103,15 @@ describe("drift", () => {
 });
 
 describe("realism guard", () => {
-  const base = { goalTitle: "Gain 20 lbs of lean muscle", metricName: "Body weight", unit: "lb", baseline: 150, target: 170, durationWeeks: 10, startDate: today };
+  const base = {
+    goalTitle: "Gain 20 lbs of lean muscle",
+    metricName: "Body weight",
+    unit: "lb",
+    baseline: 150,
+    target: 170,
+    durationWeeks: 10,
+    startDate: today,
+  };
   it("warns about >1 lb/week muscle gain", () => {
     const w = checkRealism({ ...base, weeklyRate: 2 });
     expect(w.map((x) => x.rule)).toContain("muscle_gain");
@@ -81,17 +120,46 @@ describe("realism guard", () => {
   });
   it("accepts a sane bulk", () => expect(checkRealism({ ...base, weeklyRate: 0.5 })).toEqual([]));
   it("warns about >100 SAT points a month over a long stretch", () => {
-    const sat = { goalTitle: "Get a 1500+ on the SAT", metricName: "Practice test score", unit: "points", baseline: 1100, target: 1500, startDate: today };
-    expect(checkRealism({ ...sat, weeklyRate: 40, durationWeeks: 10 }).map((w) => w.rule)).toContain("sat_points");
+    const sat = {
+      goalTitle: "Get a 1500+ on the SAT",
+      metricName: "Practice test score",
+      unit: "points",
+      baseline: 1100,
+      target: 1500,
+      startDate: today,
+    };
+    expect(
+      checkRealism({ ...sat, weeklyRate: 40, durationWeeks: 10 }).map((w) => w.rule),
+    ).toContain("sat_points");
     expect(checkRealism({ ...sat, weeklyRate: 40, durationWeeks: 4 })).toEqual([]);
     expect(checkRealism({ ...sat, weeklyRate: 15, durationWeeks: 20 })).toEqual([]);
   });
   it("warns about fast weight loss", () => {
-    const w = checkRealism({ goalTitle: "Lose weight", metricName: "Body weight", unit: "lb", baseline: 200, target: 170, weeklyRate: -3, durationWeeks: 10, startDate: today });
+    const w = checkRealism({
+      goalTitle: "Lose weight",
+      metricName: "Body weight",
+      unit: "lb",
+      baseline: 200,
+      target: 170,
+      weeklyRate: -3,
+      durationWeeks: 10,
+      startDate: today,
+    });
     expect(w[0].rule).toBe("weight_loss");
   });
   it("warns when the plan is 3× the observed pace", () => {
-    const w = checkRealism({ goalTitle: "Read more", metricName: "Pages", unit: "pages", baseline: 0, target: 1000, weeklyRate: 100, durationWeeks: 10, startDate: today, observedWeekly: 20, aggregation: "sum_total" });
+    const w = checkRealism({
+      goalTitle: "Read more",
+      metricName: "Pages",
+      unit: "pages",
+      baseline: 0,
+      target: 1000,
+      weeklyRate: 100,
+      durationWeeks: 10,
+      startDate: today,
+      observedWeekly: 20,
+      aggregation: "sum_total",
+    });
     expect(w[0].rule).toBe("vs_observed");
   });
 });

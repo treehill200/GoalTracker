@@ -5,7 +5,13 @@ import { useEffect, useRef } from "react";
 const COLORS = ["#E5484D", "#3E8EF7", "#F5C542", "#FFFFFF", "#F76B15"];
 
 /** Lightweight canvas particle burst (original, no library). Skipped for reduced motion. */
-export function ConfettiBurst({ count = 140, duration = 2600 }: { count?: number; duration?: number }) {
+export function ConfettiBurst({
+  count = 140,
+  duration = 2600,
+}: {
+  count?: number;
+  duration?: number;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
   const reduce = useReducedMotion();
   useEffect(() => {
@@ -59,5 +65,11 @@ export function ConfettiBurst({ count = 140, duration = 2600 }: { count?: number
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
   }, [count, duration, reduce]);
-  return <canvas ref={ref} className="pointer-events-none fixed inset-0 z-[60] h-full w-full" aria-hidden />;
+  return (
+    <canvas
+      ref={ref}
+      className="pointer-events-none fixed inset-0 z-[60] h-full w-full"
+      aria-hidden
+    />
+  );
 }

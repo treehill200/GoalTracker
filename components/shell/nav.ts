@@ -1,4 +1,15 @@
-import { Bell, Bot, CalendarCheck, Home, Plug, Settings, Target, Trophy, Users, PenLine } from "lucide-react";
+import {
+  Bell,
+  Bot,
+  CalendarCheck,
+  Home,
+  Plug,
+  Settings,
+  Target,
+  Trophy,
+  Users,
+  PenLine,
+} from "lucide-react";
 
 export const MAIN_NAV = [
   { href: "/", label: "Home", Icon: Home },

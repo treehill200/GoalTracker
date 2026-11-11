@@ -11,8 +11,16 @@ export type Op =
   | { kind: "remove"; table: TableName; id: string }
   | { kind: "profile"; patch: Partial<Profile> };
 
-export const insertOp = <T extends TableName>(table: T, row: TableMap[T]): Op => ({ kind: "insert", table, row });
-export const updateOp = <T extends TableName>(table: T, id: string, patch: Partial<TableMap[T]>): Op => ({
+export const insertOp = <T extends TableName>(table: T, row: TableMap[T]): Op => ({
+  kind: "insert",
+  table,
+  row,
+});
+export const updateOp = <T extends TableName>(
+  table: T,
+  id: string,
+  patch: Partial<TableMap[T]>,
+): Op => ({
   kind: "update",
   table,
   id,
@@ -26,7 +34,14 @@ type Row = { id: string };
 /** Pure: returns a new AppData with the op applied. Inserts with an existing id act as upserts. */
 export function applyOp(data: AppData, op: Op): AppData {
   if (op.kind === "profile") {
-    return { ...data, profile: { ...data.profile, ...op.patch, settings: { ...data.profile.settings, ...(op.patch.settings ?? {}) } } };
+    return {
+      ...data,
+      profile: {
+        ...data.profile,
+        ...op.patch,
+        settings: { ...data.profile.settings, ...(op.patch.settings ?? {}) },
+      },
+    };
   }
   const key = TABLE_TO_KEY[op.table];
   const rows = data[key] as unknown as Row[];
@@ -34,7 +49,9 @@ export function applyOp(data: AppData, op: Op): AppData {
   switch (op.kind) {
     case "insert": {
       const row = op.row as Row;
-      next = rows.some((r) => r.id === row.id) ? rows.map((r) => (r.id === row.id ? row : r)) : [...rows, row];
+      next = rows.some((r) => r.id === row.id)
+        ? rows.map((r) => (r.id === row.id ? row : r))
+        : [...rows, row];
       break;
     }
     case "update":
@@ -69,7 +86,9 @@ function cascade(d: AppData, table: TableName, id: string): AppData {
       completions: d.completions.filter((c) => !taskIds.has(c.taskId)),
       adjustments: d.adjustments.filter((a) => a.goalId !== id),
       reviews: d.reviews.filter((r) => r.goalId !== id),
-      partnerships: d.partnerships.map((p) => (p.goalIds.includes(id) ? { ...p, goalIds: p.goalIds.filter((g) => g !== id) } : p)),
+      partnerships: d.partnerships.map((p) =>
+        p.goalIds.includes(id) ? { ...p, goalIds: p.goalIds.filter((g) => g !== id) } : p,
+      ),
     };
   }
   if (table === "metrics") {

@@ -84,7 +84,11 @@ export function requiredRate(
 }
 
 /** Momentum = 0.6 × consistency + 0.4 × min(observedRate / plannedRate, 1). */
-export function momentum(consistency: number, observedRate: number | null, plannedRate: number | null): number {
+export function momentum(
+  consistency: number,
+  observedRate: number | null,
+  plannedRate: number | null,
+): number {
   const c = clamp(consistency, 0, 1);
   let rateTerm = 0;
   if (observedRate !== null && plannedRate !== null && plannedRate !== 0) {

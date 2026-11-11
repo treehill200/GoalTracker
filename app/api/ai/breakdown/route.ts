@@ -21,7 +21,8 @@ export async function POST(req: Request) {
   const blocked = await guardAi(req, 15);
   if (blocked) return blocked;
   const parsed = Body.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Describe your goal in a few words." }, { status: 400 });
+  if (!parsed.success)
+    return NextResponse.json({ error: "Describe your goal in a few words." }, { status: 400 });
   const { goal, answers, today } = parsed.data;
   const model = getModel();
 
@@ -41,7 +42,11 @@ export async function POST(req: Request) {
     }
   }
 
-  if (!model) return NextResponse.json({ source: "heuristic", plan: heuristicBreakdown(goal, answers, today) });
+  if (!model)
+    return NextResponse.json({
+      source: "heuristic",
+      plan: heuristicBreakdown(goal, answers, today),
+    });
   try {
     const { output } = await generateText({
       model,
@@ -60,6 +65,10 @@ Rules:
     return NextResponse.json({ source: "ai", plan: output });
   } catch (err) {
     console.error("breakdown plan failed", err);
-    return NextResponse.json({ source: "heuristic", plan: heuristicBreakdown(goal, answers, today), warning: "AI was unavailable, so this plan was generated with rules." });
+    return NextResponse.json({
+      source: "heuristic",
+      plan: heuristicBreakdown(goal, answers, today),
+      warning: "AI was unavailable, so this plan was generated with rules.",
+    });
   }
 }

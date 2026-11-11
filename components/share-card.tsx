@@ -38,7 +38,13 @@ export function ShareCard({ data }: { data: ShareCardData }) {
     if (!blob) return;
     const file = new File([blob], "goal-complete.png", { type: "image/png" });
     if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: "Goal complete!", text: `I just completed "${data.title}" 🎉` }).catch(() => undefined);
+      await navigator
+        .share({
+          files: [file],
+          title: "Goal complete!",
+          text: `I just completed "${data.title}" 🎉`,
+        })
+        .catch(() => undefined);
     } else download(blob);
   }
 
@@ -54,7 +60,14 @@ export function ShareCard({ data }: { data: ShareCardData }) {
   const title = data.title.length > 34 ? `${data.title.slice(0, 33)}…` : data.title;
   return (
     <div className="flex flex-col items-center gap-3">
-      <svg ref={ref} viewBox="0 0 1080 1350" className="w-full max-w-[300px] rounded-xl shadow-2xl" xmlns="http://www.w3.org/2000/svg" role="img" aria-label={`Goal complete card for ${data.title}`}>
+      <svg
+        ref={ref}
+        viewBox="0 0 1080 1350"
+        className="w-full max-w-[300px] rounded-xl shadow-2xl"
+        xmlns="http://www.w3.org/2000/svg"
+        role="img"
+        aria-label={`Goal complete card for ${data.title}`}
+      >
         <defs>
           <linearGradient id="sc-bg" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#141416" />
@@ -67,12 +80,68 @@ export function ShareCard({ data }: { data: ShareCardData }) {
         </defs>
         <rect width="1080" height="1350" fill="url(#sc-bg)" />
         <circle cx="540" cy="470" r="230" fill="none" stroke="#26262a" strokeWidth="44" />
-        <circle cx="540" cy="470" r="230" fill="none" stroke="url(#sc-ring)" strokeWidth="44" strokeLinecap="round" />
-        <text x="540" y="500" textAnchor="middle" fontSize="150" fontWeight="800" fill="#F4F4F5" fontFamily="system-ui, sans-serif">100</text>
-        <text x="540" y="560" textAnchor="middle" fontSize="34" fill="#A1A1AA" fontFamily="system-ui, sans-serif" letterSpacing="6">GOAL SCORE</text>
-        <text x="540" y="130" textAnchor="middle" fontSize="44" fontWeight="700" fill="#F5C542" fontFamily="system-ui, sans-serif" letterSpacing="8">GOAL COMPLETE</text>
-        <text x="540" y="820" textAnchor="middle" fontSize="58" fontWeight="800" fill="#F4F4F5" fontFamily="system-ui, sans-serif">{title}</text>
-        <text x="540" y="880" textAnchor="middle" fontSize="32" fill="#A1A1AA" fontFamily="system-ui, sans-serif">
+        <circle
+          cx="540"
+          cy="470"
+          r="230"
+          fill="none"
+          stroke="url(#sc-ring)"
+          strokeWidth="44"
+          strokeLinecap="round"
+        />
+        <text
+          x="540"
+          y="500"
+          textAnchor="middle"
+          fontSize="150"
+          fontWeight="800"
+          fill="#F4F4F5"
+          fontFamily="system-ui, sans-serif"
+        >
+          100
+        </text>
+        <text
+          x="540"
+          y="560"
+          textAnchor="middle"
+          fontSize="34"
+          fill="#A1A1AA"
+          fontFamily="system-ui, sans-serif"
+          letterSpacing="6"
+        >
+          GOAL SCORE
+        </text>
+        <text
+          x="540"
+          y="130"
+          textAnchor="middle"
+          fontSize="44"
+          fontWeight="700"
+          fill="#F5C542"
+          fontFamily="system-ui, sans-serif"
+          letterSpacing="8"
+        >
+          GOAL COMPLETE
+        </text>
+        <text
+          x="540"
+          y="820"
+          textAnchor="middle"
+          fontSize="58"
+          fontWeight="800"
+          fill="#F4F4F5"
+          fontFamily="system-ui, sans-serif"
+        >
+          {title}
+        </text>
+        <text
+          x="540"
+          y="880"
+          textAnchor="middle"
+          fontSize="32"
+          fill="#A1A1AA"
+          fontFamily="system-ui, sans-serif"
+        >
           {fmtDate(data.startDate)} → {fmtDate(data.completedOn)}
         </text>
         {[
@@ -81,17 +150,49 @@ export function ShareCard({ data }: { data: ShareCardData }) {
           ["LEVEL", data.level],
         ].map(([label, value], i) => (
           <g key={label} transform={`translate(${200 + i * 340}, 1030)`}>
-            <text textAnchor="middle" fontSize="80" fontWeight="800" fill={["#E5484D", "#3E8EF7", "#F5C542"][i]} fontFamily="system-ui, sans-serif">{value}</text>
-            <text y="56" textAnchor="middle" fontSize="28" fill="#A1A1AA" fontFamily="system-ui, sans-serif" letterSpacing="4">{label}</text>
+            <text
+              textAnchor="middle"
+              fontSize="80"
+              fontWeight="800"
+              fill={["#E5484D", "#3E8EF7", "#F5C542"][i]}
+              fontFamily="system-ui, sans-serif"
+            >
+              {value}
+            </text>
+            <text
+              y="56"
+              textAnchor="middle"
+              fontSize="28"
+              fill="#A1A1AA"
+              fontFamily="system-ui, sans-serif"
+              letterSpacing="4"
+            >
+              {label}
+            </text>
           </g>
         ))}
-        <text x="540" y="1260" textAnchor="middle" fontSize="30" fill="#71717A" fontFamily="system-ui, sans-serif">Tracked with Goal Tracker</text>
+        <text
+          x="540"
+          y="1260"
+          textAnchor="middle"
+          fontSize="30"
+          fill="#71717A"
+          fontFamily="system-ui, sans-serif"
+        >
+          Tracked with Goal Tracker
+        </text>
       </svg>
       <div className="flex gap-2">
         <Button onClick={share}>
           <Share2 /> Share
         </Button>
-        <Button variant="secondary" onClick={async () => { const b = await toPng(); if (b) download(b); }}>
+        <Button
+          variant="secondary"
+          onClick={async () => {
+            const b = await toPng();
+            if (b) download(b);
+          }}
+        >
           <Download /> Save image
         </Button>
       </div>

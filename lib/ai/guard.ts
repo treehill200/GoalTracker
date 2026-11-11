@@ -11,8 +11,13 @@ import { clientKey, rateLimit } from "./rate-limit";
 export async function guardAi(req: Request, limit = 20): Promise<NextResponse | null> {
   const f = getFeatures();
   const userId = await getUserId();
-  if (f.supabase && !userId) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
+  if (f.supabase && !userId)
+    return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const r = rateLimit(await clientKey(req, userId), limit);
-  if (!r.ok) return NextResponse.json({ error: `Too many requests — try again in ${r.retryAfter}s` }, { status: 429, headers: { "Retry-After": String(r.retryAfter) } });
+  if (!r.ok)
+    return NextResponse.json(
+      { error: `Too many requests — try again in ${r.retryAfter}s` },
+      { status: 429, headers: { "Retry-After": String(r.retryAfter) } },
+    );
   return null;
 }

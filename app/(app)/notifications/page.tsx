@@ -1,6 +1,18 @@
 "use client";
 import Link from "next/link";
-import { Award, Bell, CalendarCheck, CheckCheck, Flag, Heart, MessageCircle, PartyPopper, SlidersHorizontal, Star, TrendingDown } from "lucide-react";
+import {
+  Award,
+  Bell,
+  CalendarCheck,
+  CheckCheck,
+  Flag,
+  Heart,
+  MessageCircle,
+  PartyPopper,
+  SlidersHorizontal,
+  Star,
+  TrendingDown,
+} from "lucide-react";
 import type { NotificationKind } from "@/lib/data/types";
 import { useStore } from "@/lib/store/store";
 import { cn, timeAgo } from "@/lib/utils";
@@ -41,30 +53,48 @@ export default function NotificationsPage() {
         </div>
       </div>
       {list.length ? (
-        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface-1">
+        <ul className="divide-border border-border bg-surface-1 divide-y overflow-hidden rounded-xl border">
           {list.map((n) => {
             const Icon = ICON[n.kind] ?? Bell;
             const body = (
               <div className={cn("flex gap-3 p-4", !n.read && "bg-blue/5")}>
-                <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-full", n.kind === "cheer" || n.kind === "badge" ? "bg-yellow-fill/15 text-yellow" : n.kind === "drift" ? "bg-orange/15 text-orange" : "bg-surface-2 text-blue")}>
+                <span
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-full",
+                    n.kind === "cheer" || n.kind === "badge"
+                      ? "bg-yellow-fill/15 text-yellow"
+                      : n.kind === "drift"
+                        ? "bg-orange/15 text-orange"
+                        : "bg-surface-2 text-blue",
+                  )}
+                >
                   <Icon className="size-4" aria-hidden />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className={cn("text-sm", !n.read && "font-semibold")}>{n.title}</p>
-                  <p className="text-sm text-muted-foreground">{n.body}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{timeAgo(n.createdAt)}</p>
+                  <p className="text-muted-foreground text-sm">{n.body}</p>
+                  <p className="text-muted-foreground mt-1 text-xs">{timeAgo(n.createdAt)}</p>
                 </div>
-                {!n.read ? <span className="mt-2 size-2 shrink-0 rounded-full bg-red" aria-label="Unread" /> : null}
+                {!n.read ? (
+                  <span className="bg-red mt-2 size-2 shrink-0 rounded-full" aria-label="Unread" />
+                ) : null}
               </div>
             );
             return (
               <li key={n.id}>
                 {n.href ? (
-                  <Link href={n.href} onClick={() => !n.read && actions.markRead(n.id)} className="block hover:bg-surface-2/50">
+                  <Link
+                    href={n.href}
+                    onClick={() => !n.read && actions.markRead(n.id)}
+                    className="hover:bg-surface-2/50 block"
+                  >
                     {body}
                   </Link>
                 ) : (
-                  <button className="block w-full text-left hover:bg-surface-2/50" onClick={() => !n.read && actions.markRead(n.id)}>
+                  <button
+                    className="hover:bg-surface-2/50 block w-full text-left"
+                    onClick={() => !n.read && actions.markRead(n.id)}
+                  >
                     {body}
                   </button>
                 )}
@@ -73,7 +103,11 @@ export default function NotificationsPage() {
           })}
         </ul>
       ) : (
-        <EmptyState icon={<Bell />} title="All quiet" body="Reminders, drift alerts, cheers and milestones will show up here." />
+        <EmptyState
+          icon={<Bell />}
+          title="All quiet"
+          body="Reminders, drift alerts, cheers and milestones will show up here."
+        />
       )}
     </div>
   );

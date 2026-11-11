@@ -17,10 +17,16 @@ export function fmtSigned(x: number | null | undefined, digits?: number): string
   return (x > 0 ? "+" : x < 0 ? "−" : "") + fmt(Math.abs(x), digits);
 }
 
-export function fmtDate(d: string | null | undefined, opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" }): string {
+export function fmtDate(
+  d: string | null | undefined,
+  opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" },
+): string {
   if (!d) return "—";
   const [y, m, day] = d.slice(0, 10).split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, day)).toLocaleDateString(undefined, { timeZone: "UTC", ...opts });
+  return new Date(Date.UTC(y, m - 1, day)).toLocaleDateString(undefined, {
+    timeZone: "UTC",
+    ...opts,
+  });
 }
 
 export function fmtShortDate(d: string | null | undefined): string {

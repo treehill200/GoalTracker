@@ -11,7 +11,12 @@ describe("buildForecast", () => {
   const b = bundleFor(d, SEED_IDS.goalSat)!;
   const a = analyzeGoal(b, { today });
   const m = a.metrics.find((x) => x.metric.id === SEED_IDS.mSat)!;
-  const { points, end } = buildForecast(m, { start: b.goal.startDate, deadline: b.goal.deadline!, today, curve: "linear" });
+  const { points, end } = buildForecast(m, {
+    start: b.goal.startDate,
+    deadline: b.goal.deadline!,
+    today,
+    curve: "linear",
+  });
 
   it("is sorted and spans past the deadline to the forecast", () => {
     expect(points.map((p) => p.x)).toEqual([...points.map((p) => p.x)].sort((x, y) => x - y));

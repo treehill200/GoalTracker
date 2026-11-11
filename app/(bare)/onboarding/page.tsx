@@ -26,7 +26,11 @@ export default function OnboardingPage() {
   }, []);
 
   async function finish() {
-    await actions.updateProfile({ onboarded: true, displayName: name.trim() || "Goal getter", coachId: coach });
+    await actions.updateProfile({
+      onboarded: true,
+      displayName: name.trim() || "Goal getter",
+      coachId: coach,
+    });
     router.replace("/");
   }
 
@@ -37,7 +41,10 @@ export default function OnboardingPage() {
         <span className="font-bold">Goal Tracker</span>
         <ol className="ml-auto flex gap-1.5" aria-label={`Step ${step + 1} of 3`}>
           {[0, 1, 2].map((i) => (
-            <li key={i} className={cn("h-1.5 w-8 rounded-full", i <= step ? "bg-red" : "bg-surface-3")} />
+            <li
+              key={i}
+              className={cn("h-1.5 w-8 rounded-full", i <= step ? "bg-red" : "bg-surface-3")}
+            />
           ))}
         </ol>
       </div>
@@ -45,7 +52,10 @@ export default function OnboardingPage() {
       {step === 0 ? (
         <section className="space-y-5">
           <h1 className="text-3xl font-bold tracking-tight">Big goals, real numbers.</h1>
-          <p className="text-muted-foreground">Goal Tracker turns a vague goal into metrics, predicts your finish date, and keeps you going with streaks, rewards and a coach who actually reacts to your progress.</p>
+          <p className="text-muted-foreground">
+            Goal Tracker turns a vague goal into metrics, predicts your finish date, and keeps you
+            going with streaks, rewards and a coach who actually reacts to your progress.
+          </p>
           <Field label="What should we call you?" htmlFor="ob-name">
             <Input id="ob-name" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
           </Field>
@@ -56,14 +66,34 @@ export default function OnboardingPage() {
       ) : step === 1 ? (
         <section className="space-y-5">
           <h1 className="text-2xl font-bold tracking-tight">Pick your coach</h1>
-          <p className="text-sm text-muted-foreground">Their mood follows your progress — happy when you&apos;re on pace, worried when you slip. You can switch any time.</p>
+          <p className="text-muted-foreground text-sm">
+            Their mood follows your progress — happy when you&apos;re on pace, worried when you
+            slip. You can switch any time.
+          </p>
           <div className="grid gap-3 sm:grid-cols-2">
             {PERSONA_LIST.map((p) => (
-              <button key={p.id} onClick={() => setCoach(p.id)} aria-pressed={coach === p.id} className={cn("flex items-center gap-4 rounded-xl border p-4 text-left transition", coach === p.id ? "border-red bg-red/10" : "border-border bg-surface-1 hover:border-surface-3")} data-testid={`coach-${p.id}`}>
-                <CoachAvatar coach={p.id} mood={coach === p.id ? MOODS[moodIdx] : "happy"} size={80} />
+              <button
+                key={p.id}
+                onClick={() => setCoach(p.id)}
+                aria-pressed={coach === p.id}
+                className={cn(
+                  "flex items-center gap-4 rounded-xl border p-4 text-left transition",
+                  coach === p.id
+                    ? "border-red bg-red/10"
+                    : "border-border bg-surface-1 hover:border-surface-3",
+                )}
+                data-testid={`coach-${p.id}`}
+              >
+                <CoachAvatar
+                  coach={p.id}
+                  mood={coach === p.id ? MOODS[moodIdx] : "happy"}
+                  size={80}
+                />
                 <span>
                   <span className="block text-lg font-bold">{p.name}</span>
-                  <span className="block text-xs font-semibold text-muted-foreground uppercase">{p.title}</span>
+                  <span className="text-muted-foreground block text-xs font-semibold uppercase">
+                    {p.title}
+                  </span>
                   <span className="mt-1 block text-sm">&ldquo;{p.tagline}&rdquo;</span>
                 </span>
               </button>
@@ -87,7 +117,9 @@ export default function OnboardingPage() {
       ) : (
         <section className="space-y-5">
           <h1 className="text-2xl font-bold tracking-tight">Create your first goal</h1>
-          <p className="text-sm text-muted-foreground">Describe it in plain English and we&apos;ll build a plan — or skip to manual setup.</p>
+          <p className="text-muted-foreground text-sm">
+            Describe it in plain English and we&apos;ll build a plan — or skip to manual setup.
+          </p>
           <NewGoalFlow compact onCreated={finish} />
           <Button variant="link" onClick={finish}>
             Skip for now — I&apos;ll add goals later

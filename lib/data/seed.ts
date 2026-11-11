@@ -119,27 +119,128 @@ export function buildSeed(today: DateStr): AppData {
     },
   ];
 
-  const metric = (m: Omit<Metric, "userId" | "createdAt" | "source">): Metric => ({ ...m, userId: u, createdAt: created, source: "manual" });
+  const metric = (m: Omit<Metric, "userId" | "createdAt" | "source">): Metric => ({
+    ...m,
+    userId: u,
+    createdAt: created,
+    source: "manual",
+  });
   const metrics: Metric[] = [
-    metric({ id: I.mSat, goalId: I.goalSat, name: "Practice test score", unit: "points", baseline: 1180, target: 1500, direction: "increase", weight: 0.5, aggregation: "latest", weeklyTarget: null, isKey: true }),
-    metric({ id: I.mHours, goalId: I.goalSat, name: "Study hours", unit: "hours", baseline: 0, target: 6, direction: "increase", weight: 0.2, aggregation: "weekly_sum", weeklyTarget: null, isKey: false }),
-    metric({ id: I.mWeight, goalId: I.goalMuscle, name: "Body weight", unit: "lb", baseline: 150, target: 170, direction: "increase", weight: 0.4, aggregation: "latest", weeklyTarget: 0.5, isKey: true }),
-    metric({ id: I.mGym, goalId: I.goalMuscle, name: "Gym sessions", unit: "sessions", baseline: 0, target: 4, direction: "increase", weight: 0.3, aggregation: "weekly_sum", weeklyTarget: null, isKey: false }),
-    metric({ id: I.mProtein, goalId: I.goalMuscle, name: "Protein goal days", unit: "days", baseline: 0, target: 6, direction: "increase", weight: 0.3, aggregation: "weekly_sum", weeklyTarget: null, isKey: false }),
+    metric({
+      id: I.mSat,
+      goalId: I.goalSat,
+      name: "Practice test score",
+      unit: "points",
+      baseline: 1180,
+      target: 1500,
+      direction: "increase",
+      weight: 0.5,
+      aggregation: "latest",
+      weeklyTarget: null,
+      isKey: true,
+    }),
+    metric({
+      id: I.mHours,
+      goalId: I.goalSat,
+      name: "Study hours",
+      unit: "hours",
+      baseline: 0,
+      target: 6,
+      direction: "increase",
+      weight: 0.2,
+      aggregation: "weekly_sum",
+      weeklyTarget: null,
+      isKey: false,
+    }),
+    metric({
+      id: I.mWeight,
+      goalId: I.goalMuscle,
+      name: "Body weight",
+      unit: "lb",
+      baseline: 150,
+      target: 170,
+      direction: "increase",
+      weight: 0.4,
+      aggregation: "latest",
+      weeklyTarget: 0.5,
+      isKey: true,
+    }),
+    metric({
+      id: I.mGym,
+      goalId: I.goalMuscle,
+      name: "Gym sessions",
+      unit: "sessions",
+      baseline: 0,
+      target: 4,
+      direction: "increase",
+      weight: 0.3,
+      aggregation: "weekly_sum",
+      weeklyTarget: null,
+      isKey: false,
+    }),
+    metric({
+      id: I.mProtein,
+      goalId: I.goalMuscle,
+      name: "Protein goal days",
+      unit: "days",
+      baseline: 0,
+      target: 6,
+      direction: "increase",
+      weight: 0.3,
+      aggregation: "weekly_sum",
+      weeklyTarget: null,
+      isKey: false,
+    }),
   ];
 
   const entries: MetricEntry[] = [];
   const completions: TaskCompletion[] = [];
-  const entry = (metricId: string, date: DateStr, value: number, time = "19:00", note: string | null = null) =>
-    entries.push({ id: seedId(`e-${metricId}-${date}-${entries.length}`), userId: u, metricId, value, date, recordedAt: at(date, time), source: "seed", note });
+  const entry = (
+    metricId: string,
+    date: DateStr,
+    value: number,
+    time = "19:00",
+    note: string | null = null,
+  ) =>
+    entries.push({
+      id: seedId(`e-${metricId}-${date}-${entries.length}`),
+      userId: u,
+      metricId,
+      value,
+      date,
+      recordedAt: at(date, time),
+      source: "seed",
+      note,
+    });
   const complete = (taskId: string, date: DateStr, time = "19:30") =>
-    completions.push({ id: seedId(`c-${taskId}-${date}`), userId: u, taskId, date, completedAt: at(date, time) });
+    completions.push({
+      id: seedId(`c-${taskId}-${date}`),
+      userId: u,
+      taskId,
+      date,
+      completedAt: at(date, time),
+    });
 
   // --- Goal A: SAT (slightly behind pace) -------------------------------
   // Quiet patch 3 days ago keeps the streak short so the coach looks worried.
   const satGap = new Set([addDays(today, -3), addDays(today, -4)]);
-  const satScores: [number, number][] = [[0, 1180], [7, 1190], [14, 1210], [21, 1200], [28, 1220], [35, 1230], [41, 1240]];
-  for (const [offset, score] of satScores) entry(I.mSat, addDays(start, offset), score, "12:30", offset === 0 ? "Diagnostic test" : "Full practice test");
+  const satScores: [number, number][] = [
+    [0, 1180],
+    [7, 1190],
+    [14, 1210],
+    [21, 1200],
+    [28, 1220],
+    [35, 1230],
+    [41, 1240],
+  ];
+  for (const [offset, score] of satScores)
+    entry(
+      I.mSat,
+      addDays(start, offset),
+      score,
+      "12:30",
+      offset === 0 ? "Diagnostic test" : "Full practice test",
+    );
   // First Saturday on/after start anchors the "every other Saturday" test.
   let anchor = start;
   while (weekday(anchor) !== 6) anchor = addDays(anchor, 1);
@@ -151,7 +252,8 @@ export function buildSeed(today: DateStr): AppData {
       entry(I.mHours, date, Math.round((0.5 + rand() * 0.6) * 4) / 4, "18:30");
     }
     if ([1, 3, 5].includes(weekday(date)) && rand() < 0.75) complete(I.tReview, date, "20:00");
-    if (isDueOn({ type: "every_n_weeks", weekday: 6, interval: 2, anchor }, date) && rand() < 0.9) complete(I.tFullTest, date, "12:00");
+    if (isDueOn({ type: "every_n_weeks", weekday: 6, interval: 2, anchor }, date) && rand() < 0.9)
+      complete(I.tFullTest, date, "12:00");
   }
 
   // --- Goal B: muscle (on track / slightly ahead) ------------------------
@@ -215,17 +317,59 @@ export function buildSeed(today: DateStr): AppData {
     })),
   ];
 
-  const task = (t: Omit<Task, "userId" | "createdAt" | "active">): Task => ({ ...t, userId: u, createdAt: created, active: true });
+  const task = (t: Omit<Task, "userId" | "createdAt" | "active">): Task => ({
+    ...t,
+    userId: u,
+    createdAt: created,
+    active: true,
+  });
   const tasks: Task[] = [
-    task({ id: I.tSection, goalId: I.goalSat, title: "1 practice section", recurrence: { type: "daily" }, xpValue: 15 }),
-    task({ id: I.tFullTest, goalId: I.goalSat, title: "Full practice test", recurrence: { type: "every_n_weeks", weekday: 6, interval: 2, anchor }, xpValue: 60 }),
-    task({ id: I.tReview, goalId: I.goalSat, title: "Review mistakes", recurrence: { type: "times_per_week", times: 3 }, xpValue: 20 }),
-    task({ id: I.tLift, goalId: I.goalMuscle, title: "Lift weights", recurrence: { type: "times_per_week", times: 4 }, xpValue: 25 }),
-    task({ id: I.tWeigh, goalId: I.goalMuscle, title: "Log body weight", recurrence: { type: "times_per_week", times: 3 }, xpValue: 10 }),
+    task({
+      id: I.tSection,
+      goalId: I.goalSat,
+      title: "1 practice section",
+      recurrence: { type: "daily" },
+      xpValue: 15,
+    }),
+    task({
+      id: I.tFullTest,
+      goalId: I.goalSat,
+      title: "Full practice test",
+      recurrence: { type: "every_n_weeks", weekday: 6, interval: 2, anchor },
+      xpValue: 60,
+    }),
+    task({
+      id: I.tReview,
+      goalId: I.goalSat,
+      title: "Review mistakes",
+      recurrence: { type: "times_per_week", times: 3 },
+      xpValue: 20,
+    }),
+    task({
+      id: I.tLift,
+      goalId: I.goalMuscle,
+      title: "Lift weights",
+      recurrence: { type: "times_per_week", times: 4 },
+      xpValue: 25,
+    }),
+    task({
+      id: I.tWeigh,
+      goalId: I.goalMuscle,
+      title: "Log body weight",
+      recurrence: { type: "times_per_week", times: 3 },
+      xpValue: 10,
+    }),
   ];
 
   const checkins: Checkin[] = [];
-  const notes = ["Felt focused today.", "Tired but showed up.", "Great session!", "Busy day, kept it short.", null, null];
+  const notes = [
+    "Felt focused today.",
+    "Tired but showed up.",
+    "Great session!",
+    "Busy day, kept it short.",
+    null,
+    null,
+  ];
   for (let d = 1; d < HISTORY_DAYS; d++) {
     if (rand() < 0.25) continue;
     const date = addDays(start, d);
@@ -254,9 +398,23 @@ export function buildSeed(today: DateStr): AppData {
         "Good momentum on both goals.",
         "First full week — still building the habit.",
       ][w - 1],
-      wins: [["4 gym sessions", "Protein 6/7 days"], ["Kept the streak alive"], ["New best practice score"], ["Started both goals"]][w - 1],
-      misses: [["Only 4.5 study hours"], ["Skipped review sessions"], [], ["Logged weight late"]][w - 1],
-      stats: { weekStart: ws, logs: 18 - w, tasksDone: 14 - w, tasksScheduled: 17, xpEarned: 320 - w * 20, goals: [] },
+      wins: [
+        ["4 gym sessions", "Protein 6/7 days"],
+        ["Kept the streak alive"],
+        ["New best practice score"],
+        ["Started both goals"],
+      ][w - 1],
+      misses: [["Only 4.5 study hours"], ["Skipped review sessions"], [], ["Logged weight late"]][
+        w - 1
+      ],
+      stats: {
+        weekStart: ws,
+        logs: 18 - w,
+        tasksDone: 14 - w,
+        tasksScheduled: 17,
+        xpEarned: 320 - w * 20,
+        goals: [],
+      },
       aiSuggestion: "Block two 45-minute SAT sessions on weekends to make up the study-hour gap.",
       createdAt: at(addDays(ws, 6), "19:00"),
     };
@@ -267,9 +425,25 @@ export function buildSeed(today: DateStr): AppData {
   for (let d = 0; d < HISTORY_DAYS; d += 3) {
     const amount = 30 + Math.floor(rand() * 40);
     xpTotal += amount;
-    xpEvents.push({ id: seedId(`xp-${d}`), userId: u, amount, coins: Math.round(amount / 2), reason: "Logging & tasks", refId: null, createdAt: at(addDays(start, d), "20:00") });
+    xpEvents.push({
+      id: seedId(`xp-${d}`),
+      userId: u,
+      amount,
+      coins: Math.round(amount / 2),
+      reason: "Logging & tasks",
+      refId: null,
+      createdAt: at(addDays(start, d), "20:00"),
+    });
   }
-  xpEvents.push({ id: seedId("xp-ms"), userId: u, amount: 100, coins: 50, reason: "Milestone: Diagnostic test done", refId: milestones[0].id, createdAt: at(start, "12:45") });
+  xpEvents.push({
+    id: seedId("xp-ms"),
+    userId: u,
+    amount: 100,
+    coins: 50,
+    reason: "Milestone: Diagnostic test done",
+    refId: milestones[0].id,
+    createdAt: at(start, "12:45"),
+  });
   xpTotal += 100;
   const xp = Math.max(xpTotal, 1720);
 
@@ -290,7 +464,14 @@ export function buildSeed(today: DateStr): AppData {
       checkinTime: "21:00",
       weeklyReviewDay: 0,
       quietHours: { enabled: true, start: "22:30", end: "07:00" },
-      notify: { push: false, drift: true, reminders: true, checkin: true, weeklyReview: true, cheers: true },
+      notify: {
+        push: false,
+        drift: true,
+        reminders: true,
+        checkin: true,
+        weeklyReview: true,
+        cheers: true,
+      },
       focusGoalId: I.goalSat,
       frozenDays: [],
       freezeAward: null,
@@ -299,8 +480,30 @@ export function buildSeed(today: DateStr): AppData {
   };
 
   const coachMessages: CoachMessage[] = [
-    { id: seedId("cm-1"), userId: u, goalId: I.goalSat, role: "assistant", content: "Your practice scores are climbing, but a bit slower than the plan. Two extra focused sections this week would close the gap. You've got this!", mood: "worried", coachId: "blaze", kind: "proactive", createdAt: at(addDays(today, -2), "18:05") },
-    { id: seedId("cm-2"), userId: u, goalId: I.goalMuscle, role: "assistant", content: "Body weight is trending up right on schedule. Keep stacking those lifting sessions!", mood: "happy", coachId: "blaze", kind: "proactive", createdAt: at(addDays(today, -1), "08:00") },
+    {
+      id: seedId("cm-1"),
+      userId: u,
+      goalId: I.goalSat,
+      role: "assistant",
+      content:
+        "Your practice scores are climbing, but a bit slower than the plan. Two extra focused sections this week would close the gap. You've got this!",
+      mood: "worried",
+      coachId: "blaze",
+      kind: "proactive",
+      createdAt: at(addDays(today, -2), "18:05"),
+    },
+    {
+      id: seedId("cm-2"),
+      userId: u,
+      goalId: I.goalMuscle,
+      role: "assistant",
+      content:
+        "Body weight is trending up right on schedule. Keep stacking those lifting sessions!",
+      mood: "happy",
+      coachId: "blaze",
+      kind: "proactive",
+      createdAt: at(addDays(today, -1), "08:00"),
+    },
   ];
 
   return {
@@ -315,7 +518,15 @@ export function buildSeed(today: DateStr): AppData {
     reviews,
     adjustments: [],
     xpEvents,
-    userBadges: ["first_log", "streak_7", "first_milestone", "first_checkin", "ai_planner", "early_bird", "first_review"].map((k, i) => ({
+    userBadges: [
+      "first_log",
+      "streak_7",
+      "first_milestone",
+      "first_checkin",
+      "ai_planner",
+      "early_bird",
+      "first_review",
+    ].map((k, i) => ({
       id: seedId(`ub-${k}`),
       userId: u,
       badgeKey: k,
@@ -336,7 +547,14 @@ export function buildSeed(today: DateStr): AppData {
       createdAt: created,
     })),
     redemptions: [
-      { id: seedId("redeem-1"), userId: u, rewardId: seedId("reward-0"), title: "Watch a movie", coinCost: 200, redeemedAt: at(addDays(today, -14), "20:30") },
+      {
+        id: seedId("redeem-1"),
+        userId: u,
+        rewardId: seedId("reward-0"),
+        title: "Watch a movie",
+        coinCost: 200,
+        redeemedAt: at(addDays(today, -14), "20:30"),
+      },
     ],
     coachMessages,
     partnerships: [
@@ -353,13 +571,53 @@ export function buildSeed(today: DateStr): AppData {
       },
     ],
     cheers: [
-      { id: seedId("cheer-1"), userId: u, partnershipId: I.partnership, goalId: I.goalMuscle, fromName: "Alex", emoji: "💪", message: "Look at that trend line!", createdAt: at(addDays(today, -6), "12:00") },
-      { id: seedId("cheer-2"), userId: u, partnershipId: I.partnership, goalId: I.goalMuscle, fromName: "Alex", emoji: "🔥", message: null, createdAt: at(addDays(today, -1), "09:30") },
+      {
+        id: seedId("cheer-1"),
+        userId: u,
+        partnershipId: I.partnership,
+        goalId: I.goalMuscle,
+        fromName: "Alex",
+        emoji: "💪",
+        message: "Look at that trend line!",
+        createdAt: at(addDays(today, -6), "12:00"),
+      },
+      {
+        id: seedId("cheer-2"),
+        userId: u,
+        partnershipId: I.partnership,
+        goalId: I.goalMuscle,
+        fromName: "Alex",
+        emoji: "🔥",
+        message: null,
+        createdAt: at(addDays(today, -1), "09:30"),
+      },
     ],
     integrations: [],
     notifications: [
-      { id: seedId("n-1"), userId: u, kind: "cheer", title: "Alex cheered you on 🔥", body: "Gain 20 lbs of lean muscle", goalId: I.goalMuscle, href: `/goals/${I.goalMuscle}`, read: false, dedupeKey: null, createdAt: at(addDays(today, -1), "09:30") },
-      { id: seedId("n-2"), userId: u, kind: "coach", title: "Blaze has a tip for your SAT goal", body: "Two extra focused sections this week would close the gap.", goalId: I.goalSat, href: "/coach", read: true, dedupeKey: null, createdAt: at(addDays(today, -2), "18:05") },
+      {
+        id: seedId("n-1"),
+        userId: u,
+        kind: "cheer",
+        title: "Alex cheered you on 🔥",
+        body: "Gain 20 lbs of lean muscle",
+        goalId: I.goalMuscle,
+        href: `/goals/${I.goalMuscle}`,
+        read: false,
+        dedupeKey: null,
+        createdAt: at(addDays(today, -1), "09:30"),
+      },
+      {
+        id: seedId("n-2"),
+        userId: u,
+        kind: "coach",
+        title: "Blaze has a tip for your SAT goal",
+        body: "Two extra focused sections this week would close the gap.",
+        goalId: I.goalSat,
+        href: "/coach",
+        read: true,
+        dedupeKey: null,
+        createdAt: at(addDays(today, -2), "18:05"),
+      },
     ],
   };
 }

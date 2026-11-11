@@ -30,26 +30,52 @@ export const emptyEffects = (): Effects => ({ ops: [], celebrations: [] });
  * Award XP (and coins = XP/2). Works on a running profile copy so several
  * awards in one action stack correctly.
  */
-export function awardXp(data: AppData, amount: number, reason: string, refId: string | null = null, coinsOverride?: number): Effects & { data: AppData } {
+export function awardXp(
+  data: AppData,
+  amount: number,
+  reason: string,
+  refId: string | null = null,
+  coinsOverride?: number,
+): Effects & { data: AppData } {
   const coins = coinsOverride ?? (amount > 0 ? coinsForXp(amount) : -coinsForXp(-amount));
   const before = data.profile.xp;
   const xp = Math.max(0, before + amount);
   const level = levelForXp(xp);
   const newCoins = Math.max(0, data.profile.coins + coins);
-  const event = { id: uid(), userId: data.profile.id, amount, coins, reason, refId, createdAt: new Date().toISOString() };
+  const event = {
+    id: uid(),
+    userId: data.profile.id,
+    amount,
+    coins,
+    reason,
+    refId,
+    createdAt: new Date().toISOString(),
+  };
   const ops = [insertOp("xp_events", event), profileOp({ xp, level, coins: newCoins })];
-  const celebrations: Celebration[] = levelsGained(before, xp).map((l) => ({ id: uid(), type: "level" as const, level: l }));
+  const celebrations: Celebration[] = levelsGained(before, xp).map((l) => ({
+    id: uid(),
+    type: "level" as const,
+    level: l,
+  }));
   if (amount > 0) celebrations.unshift({ id: uid(), type: "xp", amount, coins, reason });
   return {
     ops,
     celebrations,
-    data: { ...data, profile: { ...data.profile, xp, level, coins: newCoins }, xpEvents: [...data.xpEvents, event] },
+    data: {
+      ...data,
+      profile: { ...data.profile, xp, level, coins: newCoins },
+      xpEvents: [...data.xpEvents, event],
+    },
   };
 }
 
 /** All activity dates (entries, task completions, check-ins) across goals. */
 export function activityDates(data: AppData): Set<DateStr> {
-  return new Set([...data.entries.map((e) => e.date), ...data.completions.map((c) => c.date), ...data.checkins.map((c) => c.date)]);
+  return new Set([
+    ...data.entries.map((e) => e.date),
+    ...data.completions.map((c) => c.date),
+    ...data.checkins.map((c) => c.date),
+  ]);
 }
 
 export function overallStreak(data: AppData, today: DateStr): StreakInfo {
@@ -60,7 +86,11 @@ function hourIn(iso: string, tz: string) {
   return Number(timeInZone(tz, new Date(iso)).slice(0, 2));
 }
 
-export function badgeStats(data: AppData, analyses: Map<string, GoalAnalysis>, today: DateStr): BadgeStats {
+export function badgeStats(
+  data: AppData,
+  analyses: Map<string, GoalAnalysis>,
+  today: DateStr,
+): BadgeStats {
   const tz = data.profile.timezone;
   const days = [...activityDates(data)].sort();
   let comeback = false;
@@ -105,7 +135,11 @@ export function badgeStats(data: AppData, analyses: Map<string, GoalAnalysis>, t
 }
 
 /** New badges → user_badges rows, a notification each, and a celebration. */
-export function checkBadges(data: AppData, analyses: Map<string, GoalAnalysis>, today: DateStr): Effects {
+export function checkBadges(
+  data: AppData,
+  analyses: Map<string, GoalAnalysis>,
+  today: DateStr,
+): Effects {
   const owned = new Set(data.userBadges.map((b) => b.badgeKey));
   const keys = newlyEarnedBadges(badgeStats(data, analyses, today), owned);
   const now = new Date().toISOString();
@@ -113,7 +147,9 @@ export function checkBadges(data: AppData, analyses: Map<string, GoalAnalysis>, 
   const celebrations: Celebration[] = [];
   for (const key of keys) {
     const def = badgeByKey(key)!;
-    ops.push(insertOp("user_badges", { id: uid(), userId: data.profile.id, badgeKey: key, earnedAt: now }));
+    ops.push(
+      insertOp("user_badges", { id: uid(), userId: data.profile.id, badgeKey: key, earnedAt: now }),
+    );
     ops.push(
       insertOp("notifications", {
         id: uid(),

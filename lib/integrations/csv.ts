@@ -47,7 +47,8 @@ export function mapGenericCsv(rows: CsvRow[], m: GenericCsvMapping): MappedEntry
   for (const r of rows) {
     const date = normalizeDate(r[m.dateColumn]);
     const value = parseAmount(r[m.valueColumn]);
-    if (date && value !== null) out.push({ metricId: m.metricId, value, date, source: "csv", note: "CSV import" });
+    if (date && value !== null)
+      out.push({ metricId: m.metricId, value, date, source: "csv", note: "CSV import" });
   }
   return out;
 }
@@ -70,11 +71,22 @@ export function mapBankCsv(rows: CsvRow[], m: BankCsvMapping): MappedEntry[] {
     const date = normalizeDate(r[m.dateColumn]);
     const amount = parseAmount(r[m.amountColumn]);
     if (!date || amount === null) continue;
-    if (m.categoryColumn && m.categoryFilter && !(r[m.categoryColumn] ?? "").toLowerCase().includes(m.categoryFilter.toLowerCase())) continue;
+    if (
+      m.categoryColumn &&
+      m.categoryFilter &&
+      !(r[m.categoryColumn] ?? "").toLowerCase().includes(m.categoryFilter.toLowerCase())
+    )
+      continue;
     if (m.mode === "deposits" && amount <= 0) continue;
     byDay.set(date, (byDay.get(date) ?? 0) + amount);
   }
-  return [...byDay.entries()].sort().map(([date, value]) => ({ metricId: m.metricId, value: Math.round(value * 100) / 100, date, source: "bank" as const, note: "Bank CSV" }));
+  return [...byDay.entries()].sort().map(([date, value]) => ({
+    metricId: m.metricId,
+    value: Math.round(value * 100) / 100,
+    date,
+    source: "bank" as const,
+    note: "Bank CSV",
+  }));
 }
 
 export const csvAdapter: IntegrationAdapter<CsvRow, GenericCsvMapping> = {

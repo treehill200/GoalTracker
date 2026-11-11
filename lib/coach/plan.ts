@@ -10,14 +10,42 @@ export const RecurrenceSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("daily") }),
   z.object({ type: z.literal("times_per_week"), times: z.number().int().min(1).max(7) }),
   z.object({ type: z.literal("weekdays"), days: z.array(z.number().int().min(0).max(6)).min(1) }),
-  z.object({ type: z.literal("every_n_weeks"), weekday: z.number().int().min(0).max(6), interval: z.number().int().min(1).max(8), anchor: date }),
+  z.object({
+    type: z.literal("every_n_weeks"),
+    weekday: z.number().int().min(0).max(6),
+    interval: z.number().int().min(1).max(8),
+    anchor: date,
+  }),
 ]);
 
 export const PlanChangeSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("set_weekly_target"), goalId: z.string(), metricId: z.string(), value: z.number(), reason: z.string().max(300) }),
-  z.object({ type: z.literal("set_target"), goalId: z.string(), metricId: z.string(), value: z.number(), reason: z.string().max(300) }),
-  z.object({ type: z.literal("set_deadline"), goalId: z.string(), deadline: date, reason: z.string().max(300) }),
-  z.object({ type: z.literal("add_task"), goalId: z.string(), title: z.string().min(1).max(120), recurrence: RecurrenceSchema, reason: z.string().max(300) }),
+  z.object({
+    type: z.literal("set_weekly_target"),
+    goalId: z.string(),
+    metricId: z.string(),
+    value: z.number(),
+    reason: z.string().max(300),
+  }),
+  z.object({
+    type: z.literal("set_target"),
+    goalId: z.string(),
+    metricId: z.string(),
+    value: z.number(),
+    reason: z.string().max(300),
+  }),
+  z.object({
+    type: z.literal("set_deadline"),
+    goalId: z.string(),
+    deadline: date,
+    reason: z.string().max(300),
+  }),
+  z.object({
+    type: z.literal("add_task"),
+    goalId: z.string(),
+    title: z.string().min(1).max(120),
+    recurrence: RecurrenceSchema,
+    reason: z.string().max(300),
+  }),
   z.object({ type: z.literal("pause_goal"), goalId: z.string(), reason: z.string().max(300) }),
 ]);
 
@@ -26,12 +54,20 @@ export type PlanChange = z.infer<typeof PlanChangeSchema>;
 const BLOCK = /```plan\s*([\s\S]*?)```/;
 
 /** Split a coach reply into visible text and an optional validated plan change. */
-export function extractPlanChange(text: string): { text: string; change: PlanChange | null; pending: boolean } {
+export function extractPlanChange(text: string): {
+  text: string;
+  change: PlanChange | null;
+  pending: boolean;
+} {
   const m = BLOCK.exec(text);
   if (!m) {
     // While streaming, hide a half-written block.
     const open = text.indexOf("```plan");
-    return { text: open >= 0 ? text.slice(0, open).trimEnd() : text, change: null, pending: open >= 0 };
+    return {
+      text: open >= 0 ? text.slice(0, open).trimEnd() : text,
+      change: null,
+      pending: open >= 0,
+    };
   }
   const visible = (text.slice(0, m.index) + text.slice(m.index + m[0].length)).trim();
   try {
@@ -42,7 +78,10 @@ export function extractPlanChange(text: string): { text: string; change: PlanCha
   }
 }
 
-export function describePlanChange(c: PlanChange, names: { goal?: string; metric?: string }): string {
+export function describePlanChange(
+  c: PlanChange,
+  names: { goal?: string; metric?: string },
+): string {
   switch (c.type) {
     case "set_weekly_target":
       return `Set ${names.metric ?? "metric"} weekly target to ${c.value}`;

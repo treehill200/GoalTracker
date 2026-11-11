@@ -11,7 +11,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function GoalsPage() {
   const { data, analyses, focusGoalId } = useStore();
   const [filter, setFilter] = useState("active");
-  const goals = data.goals.filter((g) => (filter === "active" ? g.status === "active" || g.status === "paused" : g.status === filter));
+  const goals = data.goals.filter((g) =>
+    filter === "active" ? g.status === "active" || g.status === "paused" : g.status === filter,
+  );
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-3">
@@ -40,8 +42,18 @@ export default function GoalsPage() {
         <EmptyState
           icon={filter === "archived" ? <Archive /> : <Target />}
           title={filter === "active" ? "No active goals" : `No ${filter} goals`}
-          body={filter === "active" ? "Create a goal and the app turns it into numbers, a pace and a finish date." : "They'll show up here."}
-          action={filter === "active" ? <Button asChild><Link href="/goals/new">Create a goal</Link></Button> : undefined}
+          body={
+            filter === "active"
+              ? "Create a goal and the app turns it into numbers, a pace and a finish date."
+              : "They'll show up here."
+          }
+          action={
+            filter === "active" ? (
+              <Button asChild>
+                <Link href="/goals/new">Create a goal</Link>
+              </Button>
+            ) : undefined
+          }
         />
       )}
     </div>

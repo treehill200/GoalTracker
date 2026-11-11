@@ -28,7 +28,10 @@ export function weightedMean(components: WeightedComponent[]): number {
 }
 
 /** Milestone component = completed ÷ total, weighted by each milestone's weight (default 1). */
-export function milestoneComponent(milestones: Pick<Milestone, "weight" | "completedAt">[], asOf?: DateStr): number | null {
+export function milestoneComponent(
+  milestones: Pick<Milestone, "weight" | "completedAt">[],
+  asOf?: DateStr,
+): number | null {
   if (milestones.length === 0) return null;
   let total = 0;
   let done = 0;
@@ -44,7 +47,11 @@ export function milestoneComponent(milestones: Pick<Milestone, "weight" | "compl
  * Expected milestone progress: share of milestones whose target date has passed.
  * Milestones without a date fall back to the time-based expectation `fallback`.
  */
-export function expectedMilestones(milestones: Pick<Milestone, "weight" | "targetDate">[], today: DateStr, fallback: number): number | null {
+export function expectedMilestones(
+  milestones: Pick<Milestone, "weight" | "targetDate">[],
+  today: DateStr,
+  fallback: number,
+): number | null {
   if (milestones.length === 0) return null;
   let total = 0;
   let due = 0;
@@ -85,7 +92,12 @@ export function taskComponent(
 }
 
 /** Fallback consistency when a goal has no tasks: share of days with any log. */
-export function logDayConsistency(logDates: Set<DateStr>, today: DateStr, goalStart: DateStr, days = 14): number {
+export function logDayConsistency(
+  logDates: Set<DateStr>,
+  today: DateStr,
+  goalStart: DateStr,
+  days = 14,
+): number {
   const from = maxDate(addDays(today, -(days - 1)), goalStart);
   let total = 0;
   let hit = 0;

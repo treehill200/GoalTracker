@@ -19,23 +19,61 @@ export interface StravaMapping {
   importedIds: number[];
 }
 
-const DIST: Record<string, number> = { km: 1000, kilometers: 1000, mi: 1609.344, miles: 1609.344, mile: 1609.344, m: 1, meters: 1 };
-const TIME: Record<string, number> = { min: 60, mins: 60, minutes: 60, h: 3600, hr: 3600, hrs: 3600, hours: 3600, s: 1 };
+const DIST: Record<string, number> = {
+  km: 1000,
+  kilometers: 1000,
+  mi: 1609.344,
+  miles: 1609.344,
+  mile: 1609.344,
+  m: 1,
+  meters: 1,
+};
+const TIME: Record<string, number> = {
+  min: 60,
+  mins: 60,
+  minutes: 60,
+  h: 3600,
+  hr: 3600,
+  hrs: 3600,
+  hours: 3600,
+  s: 1,
+};
 
-export function mapStravaActivities(acts: StravaActivity[], m: StravaMapping, units: { distance: string; time: string }): MappedEntry[] {
+export function mapStravaActivities(
+  acts: StravaActivity[],
+  m: StravaMapping,
+  units: { distance: string; time: string },
+): MappedEntry[] {
   const out: MappedEntry[] = [];
   const done = new Set(m.importedIds);
   for (const a of acts) {
     if (done.has(a.id) || (m.types.length && !m.types.includes(a.type))) continue;
     const date = a.start_date_local.slice(0, 10);
     const note = `Strava #${a.id}: ${a.name}`;
-    if (m.distanceMetricId) out.push({ metricId: m.distanceMetricId, value: Math.round((a.distance / (DIST[units.distance.toLowerCase()] ?? 1000)) * 100) / 100, date, source: "strava", note });
-    if (m.timeMetricId) out.push({ metricId: m.timeMetricId, value: Math.round((a.moving_time / (TIME[units.time.toLowerCase()] ?? 60)) * 100) / 100, date, source: "strava", note });
+    if (m.distanceMetricId)
+      out.push({
+        metricId: m.distanceMetricId,
+        value: Math.round((a.distance / (DIST[units.distance.toLowerCase()] ?? 1000)) * 100) / 100,
+        date,
+        source: "strava",
+        note,
+      });
+    if (m.timeMetricId)
+      out.push({
+        metricId: m.timeMetricId,
+        value: Math.round((a.moving_time / (TIME[units.time.toLowerCase()] ?? 60)) * 100) / 100,
+        date,
+        source: "strava",
+        note,
+      });
   }
   return out;
 }
 
-export const stravaAdapter: IntegrationAdapter<StravaActivity, StravaMapping & { units: { distance: string; time: string } }> = {
+export const stravaAdapter: IntegrationAdapter<
+  StravaActivity,
+  StravaMapping & { units: { distance: string; time: string } }
+> = {
   id: "strava",
   name: "Strava",
   description: "Import runs, rides and other activities as distance and time.",

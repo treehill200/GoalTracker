@@ -5,7 +5,7 @@ import { CelebrationLayer } from "@/components/celebrations";
 /** Store without the navigation shell (onboarding). */
 export default function BareLayout({ children }: { children: React.ReactNode }) {
   return (
-    <StoreProvider fallback={<div className="p-8 text-center text-muted-foreground">Loading…</div>}>
+    <StoreProvider fallback={<div className="text-muted-foreground p-8 text-center">Loading…</div>}>
       {children}
       <CelebrationLayer />
     </StoreProvider>

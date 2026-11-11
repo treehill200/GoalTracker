@@ -4,7 +4,16 @@ import Papa from "papaparse";
 import type { AppData } from "@/lib/data/types";
 
 function csv(rows: object[]): string {
-  return Papa.unparse(rows.map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, v !== null && typeof v === "object" ? JSON.stringify(v) : v]))));
+  return Papa.unparse(
+    rows.map((r) =>
+      Object.fromEntries(
+        Object.entries(r).map(([k, v]) => [
+          k,
+          v !== null && typeof v === "object" ? JSON.stringify(v) : v,
+        ]),
+      ),
+    ),
+  );
 }
 
 export function buildExportZip(data: AppData): Uint8Array {
@@ -21,7 +30,9 @@ export function buildExportZip(data: AppData): Uint8Array {
     "xp_events.csv": strToU8(csv(data.xpEvents)),
     "rewards.csv": strToU8(csv(data.rewards)),
     "reward_redemptions.csv": strToU8(csv(data.redemptions)),
-    "README.txt": strToU8(`Goal Tracker export — ${new Date().toISOString()}\nOne CSV per table. JSON columns (recurrence, stats…) are JSON strings.\n`),
+    "README.txt": strToU8(
+      `Goal Tracker export — ${new Date().toISOString()}\nOne CSV per table. JSON columns (recurrence, stats…) are JSON strings.\n`,
+    ),
   };
   return zipSync(files, { level: 6 });
 }

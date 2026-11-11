@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { buildSeed, SEED_IDS } from "@/lib/data/seed";
 import { bundleFor, type GoalBundle } from "@/lib/data/types";
-import { analyzeGoal, currentValue, effectiveDeadlineFor, heatmapFor, keyMetric } from "@/lib/engine/analyze";
+import {
+  analyzeGoal,
+  currentValue,
+  effectiveDeadlineFor,
+  heatmapFor,
+  keyMetric,
+} from "@/lib/engine/analyze";
 import { addDays } from "@/lib/engine/dates";
 
 const TODAY = "2026-11-10";
@@ -82,7 +88,9 @@ describe("edge cases", () => {
   });
   it("handles decreasing goals", () => {
     const b = base();
-    b.metrics = [{ ...b.metrics[0], baseline: 200, target: 180, direction: "decrease", weeklyTarget: null }];
+    b.metrics = [
+      { ...b.metrics[0], baseline: 200, target: 180, direction: "decrease", weeklyTarget: null },
+    ];
     b.entries = [
       { ...b.entries[0], metricId: b.metrics[0].id, value: 195, date: addDays(TODAY, -21) },
       { ...b.entries[0], id: "x2", metricId: b.metrics[0].id, value: 190, date: TODAY },

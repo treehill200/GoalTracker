@@ -3,7 +3,16 @@
  * Pure: same input → same output. `today` is always passed in.
  */
 import type { GoalBundle, Metric, MetricEntry, Milestone, Task } from "@/lib/data/types";
-import { addDays, clamp, dateRange, diffDays, maxDate, minDate, weekStart, type DateStr } from "./dates";
+import {
+  addDays,
+  clamp,
+  dateRange,
+  diffDays,
+  maxDate,
+  minDate,
+  weekStart,
+  type DateStr,
+} from "./dates";
 import { daysSince, driftLevel, type DriftLevel } from "./drift";
 import { computeMood, type MoodResult } from "./mood";
 import {
@@ -26,7 +35,14 @@ import {
   type RateEstimate,
 } from "./rates";
 import { dueToday } from "./recurrence";
-import { expectedMilestones, goalScore, logDayConsistency, milestoneComponent, taskComponent, weightedMean } from "./score";
+import {
+  expectedMilestones,
+  goalScore,
+  logDayConsistency,
+  milestoneComponent,
+  taskComponent,
+  weightedMean,
+} from "./score";
 import { computeStreak, type StreakInfo } from "./streaks";
 
 export interface MetricAnalysis {
@@ -114,11 +130,18 @@ const DEFAULT_PLAN_WEEKS = 12;
 function entriesUpTo(entries: MetricEntry[], metricId: string, asOf: DateStr): MetricEntry[] {
   return entries
     .filter((e) => e.metricId === metricId && e.date <= asOf)
-    .sort((a, b) => (a.date === b.date ? a.recordedAt.localeCompare(b.recordedAt) : a.date < b.date ? -1 : 1));
+    .sort((a, b) =>
+      a.date === b.date ? a.recordedAt.localeCompare(b.recordedAt) : a.date < b.date ? -1 : 1,
+    );
 }
 
 /** Current value of a metric as of a date, based on its aggregation. */
-export function currentValue(metric: Metric, entries: MetricEntry[], asOf: DateStr, goalStart: DateStr): number {
+export function currentValue(
+  metric: Metric,
+  entries: MetricEntry[],
+  asOf: DateStr,
+  goalStart: DateStr,
+): number {
   const es = entriesUpTo(entries, metric.id, asOf);
   switch (metric.aggregation) {
     case "latest":
@@ -139,7 +162,9 @@ export function currentValue(metric: Metric, entries: MetricEntry[], asOf: DateS
 export function keyMetric(metrics: Metric[]): Metric | null {
   const flagged = metrics.find((m) => m.isKey && m.aggregation !== "weekly_sum");
   if (flagged) return flagged;
-  const candidates = metrics.filter((m) => m.aggregation !== "weekly_sum").sort((a, b) => b.weight - a.weight);
+  const candidates = metrics
+    .filter((m) => m.aggregation !== "weekly_sum")
+    .sort((a, b) => b.weight - a.weight);
   return candidates[0] ?? null;
 }
 
@@ -157,13 +182,23 @@ export function softDeadlineFor(bundle: GoalBundle): DateStr {
   return goal.suggestedDeadline ?? addDays(goal.startDate, DEFAULT_PLAN_WEEKS * 7);
 }
 
-export function effectiveDeadlineFor(bundle: GoalBundle): { deadline: DateStr; soft: DateStr | null } {
-  if (bundle.goal.deadline && !bundle.goal.isOpenEnded) return { deadline: bundle.goal.deadline, soft: null };
+export function effectiveDeadlineFor(bundle: GoalBundle): {
+  deadline: DateStr;
+  soft: DateStr | null;
+} {
+  if (bundle.goal.deadline && !bundle.goal.isOpenEnded)
+    return { deadline: bundle.goal.deadline, soft: null };
   const soft = softDeadlineFor(bundle);
   return { deadline: soft, soft };
 }
 
-function metricExpected(metric: Metric, start: DateStr, deadline: DateStr, asOf: DateStr, curve: GoalBundle["goal"]["expectedCurve"]) {
+function metricExpected(
+  metric: Metric,
+  start: DateStr,
+  deadline: DateStr,
+  asOf: DateStr,
+  curve: GoalBundle["goal"]["expectedCurve"],
+) {
   // Weekly habits are expected to be on target every week.
   if (metric.aggregation === "weekly_sum") return asOf >= start ? 1 : 0;
   return expectedProgress(start, deadline, asOf, curve);
@@ -216,12 +251,18 @@ function componentsAt(bundle: GoalBundle, asOf: DateStr, deadline: DateStr): Com
   return out;
 }
 
-function metricSeries(metric: Metric, entries: MetricEntry[], start: DateStr, today: DateStr): Point[] {
+function metricSeries(
+  metric: Metric,
+  entries: MetricEntry[],
+  start: DateStr,
+  today: DateStr,
+): Point[] {
   const es = entriesUpTo(entries, metric.id, today);
   if (metric.aggregation === "latest") {
-    return [{ date: start, value: metric.baseline }, ...es.map((e) => ({ date: e.date, value: e.value }))].filter(
-      (p, i, arr) => i === 0 || p.date >= arr[0].date,
-    );
+    return [
+      { date: start, value: metric.baseline },
+      ...es.map((e) => ({ date: e.date, value: e.value })),
+    ].filter((p, i, arr) => i === 0 || p.date >= arr[0].date);
   }
   if (metric.aggregation === "sum_total") {
     const out: Point[] = [{ date: start, value: metric.baseline }];
@@ -242,7 +283,12 @@ function metricSeries(metric: Metric, entries: MetricEntry[], start: DateStr, to
   return [...weeks.entries()].map(([date, value]) => ({ date, value }));
 }
 
-function thisWeekFor(metric: Metric, entries: MetricEntry[], today: DateStr, plannedPerWeek: number | null) {
+function thisWeekFor(
+  metric: Metric,
+  entries: MetricEntry[],
+  today: DateStr,
+  plannedPerWeek: number | null,
+) {
   const ws = weekStart(today);
   const es = entriesUpTo(entries, metric.id, today);
   if (metric.aggregation === "weekly_sum") {
@@ -251,7 +297,14 @@ function thisWeekFor(metric: Metric, entries: MetricEntry[], today: DateStr, pla
   }
   if (metric.aggregation === "sum_total") {
     const value = es.filter((e) => e.date >= ws).reduce((a, e) => a + e.value, 0);
-    return { value, target: plannedPerWeek, hit: plannedPerWeek !== null && Math.abs(value) >= Math.abs(plannedPerWeek) && Math.sign(value) === Math.sign(plannedPerWeek) };
+    return {
+      value,
+      target: plannedPerWeek,
+      hit:
+        plannedPerWeek !== null &&
+        Math.abs(value) >= Math.abs(plannedPerWeek) &&
+        Math.sign(value) === Math.sign(plannedPerWeek),
+    };
   }
   const before = es.filter((e) => e.date < ws);
   const startValue = before.length ? before[before.length - 1].value : metric.baseline;
@@ -260,11 +313,19 @@ function thisWeekFor(metric: Metric, entries: MetricEntry[], today: DateStr, pla
   return {
     value,
     target: plannedPerWeek,
-    hit: plannedPerWeek !== null && inWeek.length > 0 && value * Math.sign(plannedPerWeek) >= Math.abs(plannedPerWeek),
+    hit:
+      plannedPerWeek !== null &&
+      inWeek.length > 0 &&
+      value * Math.sign(plannedPerWeek) >= Math.abs(plannedPerWeek),
   };
 }
 
-export function analyzeMetric(bundle: GoalBundle, metric: Metric, today: DateStr, deadline: DateStr): MetricAnalysis {
+export function analyzeMetric(
+  bundle: GoalBundle,
+  metric: Metric,
+  today: DateStr,
+  deadline: DateStr,
+): MetricAnalysis {
   const { goal } = bundle;
   const current = currentValue(metric, bundle.entries, today, goal.startDate);
   const progress = metricProgressFor(metric, current);
@@ -291,7 +352,14 @@ export function analyzeMetric(bundle: GoalBundle, metric: Metric, today: DateStr
     plannedPerWeek = metric.weeklyTarget ?? (metric.target - metric.baseline) / weeks;
     projection = projectCompletion(current, metric.target, observed, today);
     if (hasReached(metric.baseline, metric.target, current)) {
-      projection = { converging: true, reached: true, date: today, low: today, high: today, daysToGo: 0 };
+      projection = {
+        converging: true,
+        reached: true,
+        date: today,
+        low: today,
+        high: today,
+        daysToGo: 0,
+      };
     }
   }
   return {
@@ -309,18 +377,31 @@ export function analyzeMetric(bundle: GoalBundle, metric: Metric, today: DateStr
     series: metricSeries(metric, bundle.entries, goal.startDate, today),
     lastEntryDate: es.length ? es[es.length - 1].date : null,
     thisWeek: thisWeekFor(metric, bundle.entries, today, plannedPerWeek),
-    reached: metric.aggregation === "weekly_sum" ? progress >= 1 : hasReached(metric.baseline, metric.target, current),
+    reached:
+      metric.aggregation === "weekly_sum"
+        ? progress >= 1
+        : hasReached(metric.baseline, metric.target, current),
   };
 }
 
-export function heatmapFor(activityDates: DateStr[], today: DateStr, weeks = 26): { date: DateStr; count: number }[] {
+export function heatmapFor(
+  activityDates: DateStr[],
+  today: DateStr,
+  weeks = 26,
+): { date: DateStr; count: number }[] {
   const start = addDays(weekStart(today), -(weeks - 1) * 7);
   const counts = new Map<string, number>();
-  for (const d of activityDates) if (d >= start && d <= today) counts.set(d, (counts.get(d) ?? 0) + 1);
+  for (const d of activityDates)
+    if (d >= start && d <= today) counts.set(d, (counts.get(d) ?? 0) + 1);
   return dateRange(start, today).map((date) => ({ date, count: counts.get(date) ?? 0 }));
 }
 
-export function weeklyEffortFor(entryDates: DateStr[], taskDates: DateStr[], today: DateStr, weeks = 12) {
+export function weeklyEffortFor(
+  entryDates: DateStr[],
+  taskDates: DateStr[],
+  today: DateStr,
+  weeks = 12,
+) {
   const out: { weekStart: DateStr; tasks: number; logs: number }[] = [];
   const first = addDays(weekStart(today), -(weeks - 1) * 7);
   for (let i = 0; i < weeks; i++) {
@@ -335,12 +416,19 @@ export function weeklyEffortFor(entryDates: DateStr[], taskDates: DateStr[], tod
   return out;
 }
 
-function nextActionFor(a: Pick<GoalAnalysis, "drift" | "todayTasks" | "metrics" | "milestones" | "completed">, today: DateStr): string {
+function nextActionFor(
+  a: Pick<GoalAnalysis, "drift" | "todayTasks" | "metrics" | "milestones" | "completed">,
+  today: DateStr,
+): string {
   if (a.completed) return "Goal complete — celebrate and set the next one!";
   if (a.drift === "rescue") return "Start your rescue plan";
   const pending = a.todayTasks.find((t) => t.due && !t.doneToday);
   if (pending) return `Do: ${pending.task.title}`;
-  const stale = a.metrics.find((m) => m.metric.aggregation === "latest" && (!m.lastEntryDate || diffDays(today, m.lastEntryDate) >= 3));
+  const stale = a.metrics.find(
+    (m) =>
+      m.metric.aggregation === "latest" &&
+      (!m.lastEntryDate || diffDays(today, m.lastEntryDate) >= 3),
+  );
   if (stale) return `Log your ${stale.metric.name.toLowerCase()}`;
   const next = a.milestones.find((m) => m.state === "next" || m.state === "overdue");
   if (next) return `Next milestone: ${next.milestone.title}`;
@@ -354,15 +442,20 @@ export function analyzeGoal(bundle: GoalBundle, opts: AnalyzeOptions): GoalAnaly
   const metrics = bundle.metrics.map((m) => analyzeMetric(bundle, m, today, effDeadline));
   const components = componentsAt(bundle, today, effDeadline);
   const score = goalScore(components);
-  const expectedScore = 100 * weightedMean(components.map((c) => ({ weight: c.weight, progress: c.expected })));
+  const expectedScore =
+    100 * weightedMean(components.map((c) => ({ weight: c.weight, progress: c.expected })));
   const completed = goal.status === "completed" || (components.length > 0 && score >= 99.999);
   const pr = paceRatioFormula(score / 100, expectedScore / 100);
 
   // Activity (for streaks, drift, heatmap).
   const metricIds = new Set(bundle.metrics.map((m) => m.id));
-  const entryDates = bundle.entries.filter((e) => metricIds.has(e.metricId) && e.date <= today).map((e) => e.date);
+  const entryDates = bundle.entries
+    .filter((e) => metricIds.has(e.metricId) && e.date <= today)
+    .map((e) => e.date);
   const taskIds = new Set(bundle.tasks.map((t) => t.id));
-  const taskDates = bundle.completions.filter((c) => taskIds.has(c.taskId) && c.date <= today).map((c) => c.date);
+  const taskDates = bundle.completions
+    .filter((c) => taskIds.has(c.taskId) && c.date <= today)
+    .map((c) => c.date);
   const activity = new Set([...entryDates, ...taskDates]);
   const lastLogDate = activity.size ? [...activity].sort().at(-1)! : null;
   const streak = computeStreak(activity, today, new Set(opts.frozenDays ?? []));
@@ -372,7 +465,7 @@ export function analyzeGoal(bundle: GoalBundle, opts: AnalyzeOptions): GoalAnaly
   const consistency = taskC ?? logDayConsistency(activity, today, goal.startDate);
 
   const key = keyMetric(bundle.metrics);
-  const keyA = key ? metrics.find((m) => m.metric.id === key.id) ?? null : null;
+  const keyA = key ? (metrics.find((m) => m.metric.id === key.id) ?? null) : null;
 
   let momentum: number | null = null;
   const isOpenEnded = goal.isOpenEnded || !goal.deadline;
@@ -384,7 +477,10 @@ export function analyzeGoal(bundle: GoalBundle, opts: AnalyzeOptions): GoalAnaly
   // History of actual vs expected score, one point per day.
   const history: GoalAnalysis["history"] = [];
   if (!opts.skipHistory) {
-    const end = minDate(today, goal.completedAt ? maxDate(goal.completedAt.slice(0, 10), goal.startDate) : today);
+    const end = minDate(
+      today,
+      goal.completedAt ? maxDate(goal.completedAt.slice(0, 10), goal.startDate) : today,
+    );
     for (const d of dateRange(goal.startDate, end)) {
       const cs = componentsAt(bundle, d, effDeadline);
       history.push({
@@ -397,10 +493,21 @@ export function analyzeGoal(bundle: GoalBundle, opts: AnalyzeOptions): GoalAnaly
 
   // Projection: key metric if there is one, otherwise the trend of the score itself.
   let projection: Projection;
-  if (completed) projection = { converging: true, reached: true, date: today, low: today, high: today, daysToGo: 0 };
+  if (completed)
+    projection = {
+      converging: true,
+      reached: true,
+      date: today,
+      low: today,
+      high: today,
+      daysToGo: 0,
+    };
   else if (keyA?.projection) projection = keyA.projection;
   else {
-    const pts = (history.length ? history : [{ date: today, actual: score }]).map((h) => ({ date: h.date, value: h.actual }));
+    const pts = (history.length ? history : [{ date: today, actual: score }]).map((h) => ({
+      date: h.date,
+      value: h.actual,
+    }));
     projection = projectCompletion(score, 100, observedRateLevel(pts, today), today);
   }
   const daysAheadBehind = projection.date ? diffDays(effDeadline, projection.date) : null;

@@ -21,7 +21,13 @@ function towards(value: number, target: number, dir: number) {
 
 export function buildForecast(
   m: MetricAnalysis,
-  opts: { start: DateStr; deadline: DateStr; today: DateStr; curve: ExpectedCurve; maxPoints?: number },
+  opts: {
+    start: DateStr;
+    deadline: DateStr;
+    today: DateStr;
+    curve: ExpectedCurve;
+    maxPoints?: number;
+  },
 ): { points: ForecastPoint[]; end: DateStr } {
   const { start, deadline, today, curve } = opts;
   const { baseline, target } = m.metric;
@@ -52,22 +58,22 @@ export function buildForecast(
   const slow = rate - dir * sd;
   const converging = Boolean(proj?.converging && !proj.reached);
 
-  const points = [...dates]
-    .sort()
-    .map((date): ForecastPoint => {
-      const pt: ForecastPoint = { x: toDayNum(date), date };
-      if (actualByDate.has(date)) pt.actual = actualByDate.get(date);
-      if (date === today) pt.actual = m.current;
-      if (date <= deadline) pt.plan = baseline + (target - baseline) * expectedProgress(start, deadline, date, curve);
-      if (date >= today && converging) {
-        const t = diffDays(date, today);
-        if (!proj?.date || date <= proj.date) pt.projection = towards(m.current + rate * t, target, dir);
-        const a = towards(m.current + fast * t, target, dir);
-        const b = towards(m.current + slow * t, target, dir);
-        pt.band = [Math.min(a, b), Math.max(a, b)];
-      }
-      return pt;
-    });
+  const points = [...dates].sort().map((date): ForecastPoint => {
+    const pt: ForecastPoint = { x: toDayNum(date), date };
+    if (actualByDate.has(date)) pt.actual = actualByDate.get(date);
+    if (date === today) pt.actual = m.current;
+    if (date <= deadline)
+      pt.plan = baseline + (target - baseline) * expectedProgress(start, deadline, date, curve);
+    if (date >= today && converging) {
+      const t = diffDays(date, today);
+      if (!proj?.date || date <= proj.date)
+        pt.projection = towards(m.current + rate * t, target, dir);
+      const a = towards(m.current + fast * t, target, dir);
+      const b = towards(m.current + slow * t, target, dir);
+      pt.band = [Math.min(a, b), Math.max(a, b)];
+    }
+    return pt;
+  });
   return { points, end };
 }
 

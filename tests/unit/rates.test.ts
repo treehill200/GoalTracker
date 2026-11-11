@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { addDays } from "@/lib/engine/dates";
-import { ewma, hasReached, interpolateDaily, observedRateLevel, observedRateSum, projectCompletion } from "@/lib/engine/rates";
+import {
+  ewma,
+  hasReached,
+  interpolateDaily,
+  observedRateLevel,
+  observedRateSum,
+  projectCompletion,
+} from "@/lib/engine/rates";
 
 const T = "2026-03-01";
 
@@ -41,7 +48,10 @@ describe("ewma", () => {
 
 describe("observedRateLevel", () => {
   it("recovers a steady linear trend", () => {
-    const pts = Array.from({ length: 10 }, (_, i) => ({ date: addDays(T, -27 + i * 3), value: 100 + i * 3 }));
+    const pts = Array.from({ length: 10 }, (_, i) => ({
+      date: addDays(T, -27 + i * 3),
+      value: 100 + i * 3,
+    }));
     const r = observedRateLevel(pts, T)!;
     expect(r.perDay).toBeCloseTo(1, 5);
     expect(r.sd).toBeCloseTo(0, 5);
@@ -116,7 +126,9 @@ describe("projectCompletion", () => {
   it("works for decreasing goals", () => {
     const p = projectCompletion(190, 180, { perDay: -0.5, sd: 0, samples: 10 }, T);
     expect(p.date).toBe(addDays(T, 20));
-    expect(projectCompletion(190, 180, { perDay: 0.5, sd: 0, samples: 10 }, T).converging).toBe(false);
+    expect(projectCompletion(190, 180, { perDay: 0.5, sd: 0, samples: 10 }, T).converging).toBe(
+      false,
+    );
   });
   it("is reached when current equals target", () => {
     expect(projectCompletion(5, 5, null, T).reached).toBe(true);

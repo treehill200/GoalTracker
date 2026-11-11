@@ -27,7 +27,8 @@ export interface RealismWarning {
   suggestedDeadline: DateStr | null;
 }
 
-const has = (text: string, ...words: string[]) => words.some((w) => new RegExp(`\\b${w}\\b`, "i").test(text));
+const has = (text: string, ...words: string[]) =>
+  words.some((w) => new RegExp(`\\b${w}\\b`, "i").test(text));
 
 function deadlineFor(input: RealismInput, weekly: number): DateStr | null {
   if (weekly === 0) return null;
@@ -44,7 +45,12 @@ export function checkRealism(input: RealismInput): RealismWarning[] {
   const gaining = input.target > input.baseline;
   const weekly = Math.abs(input.weeklyRate);
 
-  if (input.aggregation !== "weekly_sum" && (isLb || isKg) && gaining && has(text, "muscle", "lean", "bulk", "gain")) {
+  if (
+    input.aggregation !== "weekly_sum" &&
+    (isLb || isKg) &&
+    gaining &&
+    has(text, "muscle", "lean", "bulk", "gain")
+  ) {
     const limit = isLb ? 1 : 0.45;
     const suggested = isLb ? 0.5 : 0.25;
     if (weekly > limit) {
@@ -57,7 +63,12 @@ export function checkRealism(input: RealismInput): RealismWarning[] {
     }
   }
 
-  if (input.aggregation !== "weekly_sum" && (isLb || isKg) && !gaining && has(text, "weight", "lose", "fat", "body")) {
+  if (
+    input.aggregation !== "weekly_sum" &&
+    (isLb || isKg) &&
+    !gaining &&
+    has(text, "weight", "lose", "fat", "body")
+  ) {
     const limit = isLb ? 2 : 0.9;
     const suggested = isLb ? 1 : 0.5;
     if (weekly > limit) {
@@ -89,14 +100,19 @@ export function checkRealism(input: RealismInput): RealismWarning[] {
       const suggested = 2 / (30 / 7);
       warnings.push({
         rule: "act_points",
-        message: "More than 3 ACT points per month over a long stretch is rare. Around 2 points a month is realistic.",
+        message:
+          "More than 3 ACT points per month over a long stretch is rare. Around 2 points a month is realistic.",
         suggestedWeekly: suggested,
         suggestedDeadline: deadlineFor(input, suggested),
       });
     }
   }
 
-  if (input.aggregation === "weekly_sum" && ["h", "hr", "hrs", "hour", "hours"].includes(unit) && input.target > 60) {
+  if (
+    input.aggregation === "weekly_sum" &&
+    ["h", "hr", "hrs", "hour", "hours"].includes(unit) &&
+    input.target > 60
+  ) {
     warnings.push({
       rule: "hours_per_week",
       message: `${input.target} hours a week on one goal leaves little room for rest. Consider 20–30 focused hours.`,

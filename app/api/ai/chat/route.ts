@@ -10,7 +10,10 @@ import { cannedChatReply } from "@/lib/coach/canned";
 import { getPersona, type CoachId } from "@/lib/coach/personas";
 
 const Body = z.object({
-  messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().max(4000) })).min(1).max(40),
+  messages: z
+    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().max(4000) }))
+    .min(1)
+    .max(40),
   coachId: z.string(),
   mood: z.enum(["ecstatic", "happy", "neutral", "worried", "sad"]),
   context: z.unknown(),
@@ -43,10 +46,20 @@ export async function POST(req: Request) {
   const persona = getPersona(coachId);
   const model = getModel();
   const last = messages[messages.length - 1].content;
-  const ctx = context as { user?: { name?: string }; goals?: { id: string; title: string; tasksDueToday?: string[] }[] };
+  const ctx = context as {
+    user?: { name?: string };
+    goals?: { id: string; title: string; streak?: number; tasksDueToday?: string[] }[];
+  };
   const focus = ctx.goals?.find((g) => g.id === focusGoalId) ?? ctx.goals?.[0];
   if (!model) {
-    return streamPlain(cannedChatReply(persona.id as CoachId, mood, last, { name: ctx.user?.name, goal: focus?.title, next: focus?.tasksDueToday?.[0] }));
+    return streamPlain(
+      cannedChatReply(persona.id as CoachId, mood, last, {
+        name: ctx.user?.name,
+        goal: focus?.title,
+        streak: focus?.streak,
+        next: focus?.tasksDueToday?.[0],
+      }),
+    );
   }
   const result = streamText({
     model,

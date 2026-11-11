@@ -4,7 +4,8 @@ import { saveTokens, type StravaTokens } from "@/lib/integrations/strava-server"
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const back = (q: string) => NextResponse.redirect(new URL(`/integrations?strava=${q}`, url.origin));
+  const back = (q: string) =>
+    NextResponse.redirect(new URL(`/integrations?strava=${q}`, url.origin));
   const store = await cookies();
   const expected = store.get("gt_strava_state")?.value;
   store.delete("gt_strava_state");
@@ -14,7 +15,12 @@ export async function GET(req: Request) {
   const res = await fetch("https://www.strava.com/oauth/token", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ client_id: process.env.STRAVA_CLIENT_ID, client_secret: process.env.STRAVA_CLIENT_SECRET, code, grant_type: "authorization_code" }),
+    body: JSON.stringify({
+      client_id: process.env.STRAVA_CLIENT_ID,
+      client_secret: process.env.STRAVA_CLIENT_SECRET,
+      code,
+      grant_type: "authorization_code",
+    }),
   });
   if (!res.ok) return back("failed");
   await saveTokens((await res.json()) as StravaTokens);

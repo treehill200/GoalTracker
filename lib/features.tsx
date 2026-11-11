@@ -4,7 +4,13 @@ import type { PublicFeatures } from "./config";
 
 const Ctx = createContext<PublicFeatures | null>(null);
 
-export function FeaturesProvider({ value, children }: { value: PublicFeatures; children: React.ReactNode }) {
+export function FeaturesProvider({
+  value,
+  children,
+}: {
+  value: PublicFeatures;
+  children: React.ReactNode;
+}) {
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

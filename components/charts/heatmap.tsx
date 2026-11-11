@@ -1,13 +1,24 @@
 "use client";
 /** GitHub-style consistency heatmap (custom SVG, 26 weeks, Monday-first rows). */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { weekday } from "@/lib/engine/dates";
 import { fmtDate, fmtShortDate } from "@/lib/utils";
 
 const LEVELS = [0, 0.3, 0.55, 0.8, 1];
 
-export function ConsistencyHeatmap({ days, label = "Activity" }: { days: { date: string; count: number }[]; label?: string }) {
+export function ConsistencyHeatmap({
+  days,
+  label = "Activity",
+}: {
+  days: { date: string; count: number }[];
+  label?: string;
+}) {
   const [hover, setHover] = useState<{ date: string; count: number } | null>(null);
+  const scroller = useRef<HTMLDivElement>(null);
+  // On narrow screens, start scrolled to the most recent weeks.
+  useEffect(() => {
+    if (scroller.current) scroller.current.scrollLeft = scroller.current.scrollWidth;
+  }, [days.length]);
   const cell = 12;
   const gap = 3;
   const max = Math.max(1, ...days.map((d) => d.count));
@@ -24,19 +35,32 @@ export function ConsistencyHeatmap({ days, label = "Activity" }: { days: { date:
   const months: { x: number; label: string }[] = [];
   cols.forEach((c, i) => {
     const first = c.find(Boolean);
-    if (first && Number(first.date.slice(8)) <= 7) months.push({ x: i * (cell + gap), label: fmtDate(first.date, { month: "short" }) });
+    if (first && Number(first.date.slice(8)) <= 7)
+      months.push({ x: i * (cell + gap), label: fmtDate(first.date, { month: "short" }) });
   });
   return (
     <figure>
-      <div className="overflow-x-auto pb-1">
-        <svg width={width + 24} height={7 * (cell + gap) + 18} role="img" aria-label={`${label}: active on ${active} of the last ${days.length} days.`} className="block">
+      <div ref={scroller} className="overflow-x-auto pb-1">
+        <svg
+          width={width + 24}
+          height={7 * (cell + gap) + 18}
+          role="img"
+          aria-label={`${label}: active on ${active} of the last ${days.length} days.`}
+          className="block"
+        >
           {months.map((m) => (
             <text key={m.x} x={m.x + 24} y={10} fontSize={10} fill="var(--muted-foreground)">
               {m.label}
             </text>
           ))}
           {["Mon", "Wed", "Fri"].map((d, i) => (
-            <text key={d} x={0} y={18 + (i * 2 + 0) * (cell + gap) + 10} fontSize={9} fill="var(--muted-foreground)">
+            <text
+              key={d}
+              x={0}
+              y={18 + (i * 2 + 0) * (cell + gap) + 10}
+              fontSize={9}
+              fill="var(--muted-foreground)"
+            >
               {d}
             </text>
           ))}
@@ -62,12 +86,20 @@ export function ConsistencyHeatmap({ days, label = "Activity" }: { days: { date:
           )}
         </svg>
       </div>
-      <figcaption className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-        <span aria-live="polite">{hover ? `${fmtShortDate(hover.date)} · ${hover.count} ${hover.count === 1 ? "activity" : "activities"}` : `${active} active days in 26 weeks`}</span>
+      <figcaption className="text-muted-foreground mt-1 flex items-center justify-between text-xs">
+        <span aria-live="polite">
+          {hover
+            ? `${fmtShortDate(hover.date)} · ${hover.count} ${hover.count === 1 ? "activity" : "activities"}`
+            : `${active} active days in 26 weeks`}
+        </span>
         <span className="flex items-center gap-1" aria-hidden>
           Less
           {LEVELS.map((o, i) => (
-            <span key={i} className="size-2.5 rounded-sm" style={{ background: i ? "var(--blue)" : "var(--surface-3)", opacity: i ? o : 1 }} />
+            <span
+              key={i}
+              className="size-2.5 rounded-sm"
+              style={{ background: i ? "var(--blue)" : "var(--surface-3)", opacity: i ? o : 1 }}
+            />
           ))}
           More
         </span>

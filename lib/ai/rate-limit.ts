@@ -5,7 +5,11 @@ import "server-only";
  */
 const hits = new Map<string, number[]>();
 
-export function rateLimit(key: string, limit = 20, windowMs = 60_000): { ok: boolean; retryAfter: number } {
+export function rateLimit(
+  key: string,
+  limit = 20,
+  windowMs = 60_000,
+): { ok: boolean; retryAfter: number } {
   const now = Date.now();
   const list = (hits.get(key) ?? []).filter((t) => now - t < windowMs);
   if (list.length >= limit) {
@@ -14,7 +18,8 @@ export function rateLimit(key: string, limit = 20, windowMs = 60_000): { ok: boo
   }
   list.push(now);
   hits.set(key, list);
-  if (hits.size > 5000) for (const [k, v] of hits) if (!v.some((t) => now - t < windowMs)) hits.delete(k);
+  if (hits.size > 5000)
+    for (const [k, v] of hits) if (!v.some((t) => now - t < windowMs)) hits.delete(k);
   return { ok: true, retryAfter: 0 };
 }
 

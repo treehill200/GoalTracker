@@ -26,10 +26,13 @@ function dateExpr(d: string) {
 
 function sqlJson(v: unknown): string {
   if (v === null || v === undefined) return "'null'::jsonb";
-  if (Array.isArray(v)) return v.length ? `jsonb_build_array(${v.map(sqlJsonInner).join(", ")})` : "'[]'::jsonb";
+  if (Array.isArray(v))
+    return v.length ? `jsonb_build_array(${v.map(sqlJsonInner).join(", ")})` : "'[]'::jsonb";
   if (typeof v === "object") {
     const entries = Object.entries(v as Record<string, unknown>);
-    return entries.length ? `jsonb_build_object(${entries.map(([k, x]) => `${q(k)}, ${sqlJsonInner(x)}`).join(", ")})` : "'{}'::jsonb";
+    return entries.length
+      ? `jsonb_build_object(${entries.map(([k, x]) => `${q(k)}, ${sqlJsonInner(x)}`).join(", ")})`
+      : "'{}'::jsonb";
   }
   return `to_jsonb(${sqlJsonInner(v)})`;
 }
@@ -50,7 +53,8 @@ function sqlValue(column: string, v: unknown): string {
     if (ts) return `(${dateExpr(ts[1])} + time '${ts[2]}')::timestamptz`;
     return q(v);
   }
-  if (Array.isArray(v) && column === "goal_ids") return `array[${v.map((x) => q(String(x))).join(", ")}]::uuid[]`;
+  if (Array.isArray(v) && column === "goal_ids")
+    return `array[${v.map((x) => q(String(x))).join(", ")}]::uuid[]`;
   return sqlJson(v);
 }
 
@@ -58,7 +62,9 @@ function insert(table: string, rows: object[]): string {
   if (!rows.length) return "";
   const converted = rows.map((r) => toRow(r));
   const cols = Object.keys(converted[0]);
-  const values = converted.map((r) => `  (${cols.map((c) => sqlValue(c, r[c])).join(", ")})`).join(",\n");
+  const values = converted
+    .map((r) => `  (${cols.map((c) => sqlValue(c, r[c])).join(", ")})`)
+    .join(",\n");
   return `insert into public.${table} (${cols.join(", ")}) values\n${values}\non conflict do nothing;\n\n`;
 }
 
@@ -68,7 +74,10 @@ badges += insert(
   "badges",
   BADGES.map(({ key, name, description, icon, tier }) => ({ key, name, description, icon, tier })),
 );
-fs.writeFileSync(path.join("supabase/migrations/20261110000003_badges.sql"), badges.trimEnd() + "\n");
+fs.writeFileSync(
+  path.join("supabase/migrations/20261110000003_badges.sql"),
+  badges.trimEnd() + "\n",
+);
 
 // --- seed.sql
 const seed = buildSeed(SEED_TODAY);

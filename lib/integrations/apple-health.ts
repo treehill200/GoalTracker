@@ -46,7 +46,13 @@ export function parseAppleHealthXml(xml: string): HealthRecord[] {
     if (attr(tag, "durationUnit") === "s") minutes /= 60;
     if (attr(tag, "durationUnit") === "hr") minutes *= 60;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
-    out.push({ kind: "workout", date, value: Number.isFinite(minutes) ? minutes : 0, unit: "min", label: (attr(tag, "workoutActivityType") ?? "").replace("HKWorkoutActivityType", "") });
+    out.push({
+      kind: "workout",
+      date,
+      value: Number.isFinite(minutes) ? minutes : 0,
+      unit: "min",
+      label: (attr(tag, "workoutActivityType") ?? "").replace("HKWorkoutActivityType", ""),
+    });
   }
   return out;
 }
@@ -54,7 +60,9 @@ export function parseAppleHealthXml(xml: string): HealthRecord[] {
 export async function readHealthFile(file: File): Promise<HealthRecord[]> {
   const buf = new Uint8Array(await file.arrayBuffer());
   if (file.name.toLowerCase().endsWith(".zip")) {
-    const files = unzipSync(buf, { filter: (f) => /export\.xml$/i.test(f.name) && !/cda/i.test(f.name) });
+    const files = unzipSync(buf, {
+      filter: (f) => /export\.xml$/i.test(f.name) && !/cda/i.test(f.name),
+    });
     const name = Object.keys(files)[0];
     if (!name) throw new Error("No export.xml found in the zip");
     return parseAppleHealthXml(strFromU8(files[name]));
@@ -75,9 +83,11 @@ export interface HealthMapping {
 export function mapHealthRecords(records: HealthRecord[], mapping: HealthMapping): MappedEntry[] {
   const out: MappedEntry[] = [];
   const since = mapping.since ?? "0000-00-00";
-  const byDay = <T,>(kind: HealthRecord["kind"], reduce: (vals: HealthRecord[]) => T) => {
+  const byDay = <T>(kind: HealthRecord["kind"], reduce: (vals: HealthRecord[]) => T) => {
     const groups = new Map<string, HealthRecord[]>();
-    for (const r of records) if (r.kind === kind && r.date >= since) groups.set(r.date, [...(groups.get(r.date) ?? []), r]);
+    for (const r of records)
+      if (r.kind === kind && r.date >= since)
+        groups.set(r.date, [...(groups.get(r.date) ?? []), r]);
     return [...groups.entries()].sort().map(([date, vals]) => ({ date, value: reduce(vals) }));
   };
   if (mapping.bodyMassMetricId) {
@@ -86,15 +96,36 @@ export function mapHealthRecords(records: HealthRecord[], mapping: HealthMapping
       const from = d.value.unit.toLowerCase();
       if (mapping.bodyMassUnit === "lb" && from === "kg") value *= 2.20462;
       if (mapping.bodyMassUnit === "kg" && from === "lb") value /= 2.20462;
-      out.push({ metricId: mapping.bodyMassMetricId, value: Math.round(value * 10) / 10, date: d.date, source: "health", note: "Apple Health" });
+      out.push({
+        metricId: mapping.bodyMassMetricId,
+        value: Math.round(value * 10) / 10,
+        date: d.date,
+        source: "health",
+        note: "Apple Health",
+      });
     }
   }
   if (mapping.stepsMetricId) {
-    for (const d of byDay("steps", (v) => v.reduce((a, r) => a + r.value, 0))) out.push({ metricId: mapping.stepsMetricId, value: Math.round(d.value), date: d.date, source: "health", note: "Apple Health" });
+    for (const d of byDay("steps", (v) => v.reduce((a, r) => a + r.value, 0)))
+      out.push({
+        metricId: mapping.stepsMetricId,
+        value: Math.round(d.value),
+        date: d.date,
+        source: "health",
+        note: "Apple Health",
+      });
   }
   if (mapping.workoutMetricId) {
-    for (const d of byDay("workout", (v) => (mapping.workoutMode === "minutes" ? v.reduce((a, r) => a + r.value, 0) : v.length))) {
-      out.push({ metricId: mapping.workoutMetricId, value: Math.round(d.value * 10) / 10, date: d.date, source: "health", note: "Apple Health workout" });
+    for (const d of byDay("workout", (v) =>
+      mapping.workoutMode === "minutes" ? v.reduce((a, r) => a + r.value, 0) : v.length,
+    )) {
+      out.push({
+        metricId: mapping.workoutMetricId,
+        value: Math.round(d.value * 10) / 10,
+        date: d.date,
+        source: "health",
+        note: "Apple Health workout",
+      });
     }
   }
   return out;
@@ -103,7 +134,8 @@ export function mapHealthRecords(records: HealthRecord[], mapping: HealthMapping
 export const appleHealthAdapter: IntegrationAdapter<HealthRecord, HealthMapping> = {
   id: "apple_health",
   name: "Apple Health",
-  description: "Import your Health export (weight, steps, workouts) or connect an iOS Shortcut webhook.",
+  description:
+    "Import your Health export (weight, steps, workouts) or connect an iOS Shortcut webhook.",
   isEnabled: () => true,
   async connect() {
     /* nothing to connect: upload or webhook */

@@ -38,7 +38,9 @@ describe("expectedProgress", () => {
     expect(expectedProgress("2026-01-01", "2026-01-11", "2026-01-06")).toBeCloseTo(0.5);
   });
   it("supports the slow-start curve x^1.3", () => {
-    expect(expectedProgress("2026-01-01", "2026-01-11", "2026-01-06", "slow_start")).toBeCloseTo(Math.pow(0.5, 1.3));
+    expect(expectedProgress("2026-01-01", "2026-01-11", "2026-01-06", "slow_start")).toBeCloseTo(
+      Math.pow(0.5, 1.3),
+    );
   });
   it("clamps before start and after the deadline", () => {
     expect(expectedProgress("2026-01-10", "2026-01-20", "2026-01-01")).toBe(0);

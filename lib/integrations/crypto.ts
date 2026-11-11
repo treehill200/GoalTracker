@@ -3,7 +3,10 @@ import "server-only";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 
 function key(): Buffer {
-  const secret = process.env.INTEGRATION_ENCRYPTION_KEY || process.env.STRAVA_CLIENT_SECRET || "dev-only-insecure-key";
+  const secret =
+    process.env.INTEGRATION_ENCRYPTION_KEY ||
+    process.env.STRAVA_CLIENT_SECRET ||
+    "dev-only-insecure-key";
   return createHash("sha256").update(secret).digest();
 }
 

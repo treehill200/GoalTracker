@@ -16,7 +16,8 @@ export type MetricDirection = "increase" | "decrease";
  * - weekly_sum: average weekly total over the last 4 weeks vs a weekly target (gym sessions / week)
  */
 export type MetricAggregation = "latest" | "sum_total" | "weekly_sum";
-export type DataSource = "manual" | "strava" | "health" | "csv" | "bank" | "webhook" | "ai" | "seed";
+export type DataSource =
+  "manual" | "strava" | "health" | "csv" | "bank" | "webhook" | "ai" | "seed";
 
 export type Recurrence =
   | { type: "daily" }
@@ -147,7 +148,8 @@ export interface WeeklyReview {
   createdAt: string;
 }
 
-export type AdjustmentKind = "auto" | "push_deadline" | "commit_pace" | "rescue" | "coach" | "manual";
+export type AdjustmentKind =
+  "auto" | "push_deadline" | "commit_pace" | "rescue" | "coach" | "manual";
 
 export interface TargetAdjustment {
   id: string;
@@ -399,7 +401,10 @@ export const TABLE_TO_KEY = {
 
 export const TABLE_NAMES = Object.keys(TABLE_TO_KEY) as TableName[];
 
-export function bundleFor(data: Pick<AppData, "goals" | "metrics" | "entries" | "milestones" | "tasks" | "completions">, goalId: string): GoalBundle | null {
+export function bundleFor(
+  data: Pick<AppData, "goals" | "metrics" | "entries" | "milestones" | "tasks" | "completions">,
+  goalId: string,
+): GoalBundle | null {
   const goal = data.goals.find((g) => g.id === goalId);
   if (!goal) return null;
   const metrics = data.metrics.filter((m) => m.goalId === goalId);
@@ -410,7 +415,9 @@ export function bundleFor(data: Pick<AppData, "goals" | "metrics" | "entries" | 
     goal,
     metrics,
     entries: data.entries.filter((e) => metricIds.has(e.metricId)),
-    milestones: data.milestones.filter((m) => m.goalId === goalId).sort((a, b) => a.order - b.order),
+    milestones: data.milestones
+      .filter((m) => m.goalId === goalId)
+      .sort((a, b) => a.order - b.order),
     tasks,
     completions: data.completions.filter((c) => taskIds.has(c.taskId)),
   };

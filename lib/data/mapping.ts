@@ -3,7 +3,9 @@
  * are converted; jsonb values (settings, recurrence, stats…) are left as-is.
  */
 const OVERRIDES: Record<string, string> = { order: "sort_order" };
-const REVERSE: Record<string, string> = Object.fromEntries(Object.entries(OVERRIDES).map(([a, b]) => [b, a]));
+const REVERSE: Record<string, string> = Object.fromEntries(
+  Object.entries(OVERRIDES).map(([a, b]) => [b, a]),
+);
 
 export function toSnakeKey(k: string): string {
   return OVERRIDES[k] ?? k.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);

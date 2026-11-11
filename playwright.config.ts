@@ -11,9 +11,7 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}`,
     trace: "off",
   },
-  projects: [
-    { name: "mobile", use: { ...devices["Pixel 7"] } },
-  ],
+  projects: [{ name: "mobile", use: { ...devices["Pixel 7"] } }],
   webServer: {
     command: `npm run build && npx next start -p ${PORT}`,
     url: `http://localhost:${PORT}`,

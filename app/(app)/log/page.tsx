@@ -45,7 +45,10 @@ export default function LogPage() {
     <div className="mx-auto max-w-2xl space-y-4">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Log progress</h1>
-        <p className="text-sm text-muted-foreground">Use the red + button for a quick number. Works offline — logs sync when you&apos;re back online.</p>
+        <p className="text-muted-foreground text-sm">
+          Use the red + button for a quick number. Works offline — logs sync when you&apos;re back
+          online.
+        </p>
       </div>
       <Suspense>
         <LogTabs />

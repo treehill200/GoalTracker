@@ -58,11 +58,15 @@ export function DailyCheckin() {
     <Card>
       <form onSubmit={submit} className="space-y-4">
         <div>
-          <p className="font-semibold">{existing ? "Today's check-in (update)" : "How did today go?"}</p>
-          <p className="text-xs text-muted-foreground">Daily prompt at {data.profile.settings.checkinTime} — change it in Settings.</p>
+          <p className="font-semibold">
+            {existing ? "Today's check-in (update)" : "How did today go?"}
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Daily prompt at {data.profile.settings.checkinTime} — change it in Settings.
+          </p>
         </div>
         <fieldset>
-          <legend className="mb-2 text-xs font-medium text-muted-foreground">Mood</legend>
+          <legend className="text-muted-foreground mb-2 text-xs font-medium">Mood</legend>
           <div className="grid grid-cols-5 gap-2" role="radiogroup">
             {MOODS.map((m) => (
               <button
@@ -71,7 +75,12 @@ export function DailyCheckin() {
                 role="radio"
                 aria-checked={mood === m.v}
                 onClick={() => setMood(m.v)}
-                className={cn("flex flex-col items-center gap-1 rounded-lg border p-2 transition", mood === m.v ? "scale-105 border-yellow bg-yellow-fill/10" : "border-border bg-surface-2")}
+                className={cn(
+                  "flex flex-col items-center gap-1 rounded-lg border p-2 transition",
+                  mood === m.v
+                    ? "border-yellow bg-yellow-fill/10 scale-105"
+                    : "border-border bg-surface-2",
+                )}
               >
                 <span className="text-2xl" aria-hidden>
                   {m.emoji}
@@ -82,20 +91,38 @@ export function DailyCheckin() {
           </div>
         </fieldset>
         <Field label="Notes (optional)" htmlFor="ci-note">
-          <Textarea id="ci-note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder="What went well? What got in the way?" />
+          <Textarea
+            id="ci-note"
+            rows={2}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="What went well? What got in the way?"
+          />
         </Field>
-        <Field label="Quick numbers (optional)" htmlFor="ci-nums" hint="e.g. “weighed 152.8, studied 1 hour”">
+        <Field
+          label="Quick numbers (optional)"
+          htmlFor="ci-nums"
+          hint="e.g. “weighed 152.8, studied 1 hour”"
+        >
           <Input id="ci-nums" value={numbers} onChange={(e) => setNumbers(e.target.value)} />
         </Field>
         {!parsed ? (
           <Button type="submit" disabled={busy}>
-            {busy ? <Loader2 className="animate-spin" /> : null} {existing ? "Update check-in" : "Check in"}
+            {busy ? <Loader2 className="animate-spin" /> : null}{" "}
+            {existing ? "Update check-in" : "Check in"}
           </Button>
         ) : null}
       </form>
       {parsed ? (
         <div className="mt-4">
-          <ParsedConfirmation parsed={parsed.parsed} source={parsed.source} saving={busy} onChange={(p) => setParsed({ ...parsed, parsed: p })} onConfirm={() => save(parsed.parsed)} onCancel={() => setParsed(null)} />
+          <ParsedConfirmation
+            parsed={parsed.parsed}
+            source={parsed.source}
+            saving={busy}
+            onChange={(p) => setParsed({ ...parsed, parsed: p })}
+            onConfirm={() => save(parsed.parsed)}
+            onCancel={() => setParsed(null)}
+          />
         </div>
       ) : null}
     </Card>

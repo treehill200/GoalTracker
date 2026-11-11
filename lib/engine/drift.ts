@@ -47,7 +47,9 @@ export function rescuePlan(args: {
   const step = Math.min(Math.abs(gap), halfPace);
   const restartTarget = roundNice(args.current + dir * step);
   const restartBy = addDays(args.today, 14);
-  const newDeadline = args.deadline ? addDays(args.deadline > args.today ? args.deadline : args.today, args.daysAway) : null;
+  const newDeadline = args.deadline
+    ? addDays(args.deadline > args.today ? args.deadline : args.today, args.daysAway)
+    : null;
   return {
     restartTarget,
     restartBy,

@@ -87,46 +87,74 @@ export function CelebrationLayer() {
           >
             {current.type === "level" ? (
               <>
-                <p className="text-sm font-semibold tracking-[0.3em] text-yellow uppercase">Level up</p>
-                <div className="my-4 flex size-36 items-center justify-center rounded-full border-4 border-yellow-fill bg-red-strong text-6xl font-black text-white shadow-[0_0_80px_rgba(245,197,66,.45)]">
+                <p className="text-yellow text-sm font-semibold tracking-[0.3em] uppercase">
+                  Level up
+                </p>
+                <div className="border-yellow-fill bg-red-strong my-4 flex size-36 items-center justify-center rounded-full border-4 text-6xl font-black text-white shadow-[0_0_80px_rgba(245,197,66,.45)]">
                   <CountUp to={current.level} />
                 </div>
-                <h2 id="celebration-title" className="text-2xl font-bold">You reached level {current.level}!</h2>
+                <h2 id="celebration-title" className="text-2xl font-bold">
+                  You reached level {current.level}!
+                </h2>
                 <CoachAvatar coach={coach} mood="ecstatic" size={88} className="mt-4" />
-                <p className="text-muted-foreground mt-2 text-sm">{getPersona(coach).name} is doing a victory lap.</p>
+                <p className="text-muted-foreground mt-2 text-sm">
+                  {getPersona(coach).name} is doing a victory lap.
+                </p>
               </>
             ) : current.type === "badge" ? (
               (() => {
                 const b = badgeByKey(current.badgeKey)!;
                 return (
                   <>
-                    <p className="text-sm font-semibold tracking-[0.3em] text-yellow uppercase">Badge unlocked</p>
-                    <motion.div initial={{ rotate: -20, scale: 0.4 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: "spring", stiffness: 200 }} className="my-5">
+                    <p className="text-yellow text-sm font-semibold tracking-[0.3em] uppercase">
+                      Badge unlocked
+                    </p>
+                    <motion.div
+                      initial={{ rotate: -20, scale: 0.4 }}
+                      animate={{ rotate: 0, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200 }}
+                      className="my-5"
+                    >
                       <BadgeIcon icon={b.icon} tier={b.tier} size={120} />
                     </motion.div>
-                    <h2 id="celebration-title" className="text-2xl font-bold">{b.name}</h2>
+                    <h2 id="celebration-title" className="text-2xl font-bold">
+                      {b.name}
+                    </h2>
                     <p className="text-muted-foreground mt-1 text-sm">{b.description}</p>
                   </>
                 );
               })()
             ) : current.type === "milestone" ? (
               <>
-                <p className="text-sm font-semibold tracking-[0.3em] text-yellow uppercase">Milestone</p>
-                <div className="my-5 flex size-28 items-center justify-center rounded-full bg-blue/20 text-blue">
+                <p className="text-yellow text-sm font-semibold tracking-[0.3em] uppercase">
+                  Milestone
+                </p>
+                <div className="bg-blue/20 text-blue my-5 flex size-28 items-center justify-center rounded-full">
                   <Flag className="size-14" aria-hidden />
                 </div>
-                <h2 id="celebration-title" className="text-2xl font-bold">{current.title}</h2>
+                <h2 id="celebration-title" className="text-2xl font-bold">
+                  {current.title}
+                </h2>
                 <p className="text-muted-foreground mt-1 text-sm">{current.goalTitle}</p>
-                <p className="mt-3 text-lg font-bold text-yellow">+<CountUp to={current.xp} /> XP</p>
+                <p className="text-yellow mt-3 text-lg font-bold">
+                  +<CountUp to={current.xp} /> XP
+                </p>
               </>
             ) : current.type === "goal" ? (
               <>
-                <Trophy className="size-14 text-yellow" aria-hidden />
-                <h2 id="celebration-title" className="mt-2 mb-4 text-2xl font-bold">Goal complete!</h2>
+                <Trophy className="text-yellow size-14" aria-hidden />
+                <h2 id="celebration-title" className="mt-2 mb-4 text-2xl font-bold">
+                  Goal complete!
+                </h2>
                 {share ? <ShareCard data={share} /> : null}
               </>
             ) : null}
-            <Button className="mt-6" size="lg" onClick={() => dismissCelebration(current.id)} autoFocus>
+            <Button
+              className="mt-6"
+              size="lg"
+              onClick={() => dismissCelebration(current.id)}
+              autoFocus
+            >
               {celebrations.length > 1 ? "Next" : "Awesome!"}
             </Button>
           </motion.div>

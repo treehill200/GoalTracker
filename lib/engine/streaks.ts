@@ -20,7 +20,11 @@ export interface StreakInfo {
   activeToday: boolean;
 }
 
-export function computeStreak(active: Set<DateStr>, today: DateStr, frozen: Set<DateStr> = new Set()): StreakInfo {
+export function computeStreak(
+  active: Set<DateStr>,
+  today: DateStr,
+  frozen: Set<DateStr> = new Set(),
+): StreakInfo {
   const activeToday = active.has(today);
   let cursor = activeToday ? today : addDays(today, -1);
   let current = 0;

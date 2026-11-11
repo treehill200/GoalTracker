@@ -19,7 +19,10 @@ export interface PushSub {
 }
 
 /** Returns false when the subscription is gone (404/410) so callers can delete it. */
-export async function sendPush(sub: PushSub, payload: { title: string; body: string; href?: string; tag?: string }): Promise<boolean> {
+export async function sendPush(
+  sub: PushSub,
+  payload: { title: string; body: string; href?: string; tag?: string },
+): Promise<boolean> {
   if (!pushConfigured()) return false;
   try {
     await webpush.sendNotification(sub, JSON.stringify(payload), { TTL: 60 * 60 * 12 });

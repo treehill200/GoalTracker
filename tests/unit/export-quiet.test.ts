@@ -9,7 +9,14 @@ import { SEED_IDS } from "@/lib/data/seed";
 describe("CSV export", () => {
   it("zips one CSV per table with headers", () => {
     const files = unzipSync(buildExportZip(buildSeed("2026-11-10")));
-    expect(Object.keys(files)).toEqual(expect.arrayContaining(["goals.csv", "metric_entries.csv", "tasks.csv", "weekly_reviews.csv"]));
+    expect(Object.keys(files)).toEqual(
+      expect.arrayContaining([
+        "goals.csv",
+        "metric_entries.csv",
+        "tasks.csv",
+        "weekly_reviews.csv",
+      ]),
+    );
     const goals = strFromU8(files["goals.csv"]);
     expect(goals.split("\n")[0]).toContain("title");
     expect(goals).toContain("Get a 1500+ on the SAT");
@@ -32,7 +39,11 @@ describe("quiet hours", () => {
 
 describe("ops cascade", () => {
   it("removing a goal removes its metrics, entries, tasks and completions", () => {
-    const d = applyOp(buildSeed("2026-11-10"), { kind: "remove", table: "goals", id: SEED_IDS.goalSat });
+    const d = applyOp(buildSeed("2026-11-10"), {
+      kind: "remove",
+      table: "goals",
+      id: SEED_IDS.goalSat,
+    });
     expect(d.goals).toHaveLength(1);
     expect(d.metrics.every((m) => m.goalId !== SEED_IDS.goalSat)).toBe(true);
     expect(d.entries.some((e) => e.metricId === SEED_IDS.mSat)).toBe(false);

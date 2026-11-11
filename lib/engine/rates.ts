@@ -50,7 +50,10 @@ export function interpolateDaily(points: Point[]): Point[] {
  * Exponentially weighted mean + standard error of a set of (age, value) samples.
  * weight = 0.5^(age / halfLife)
  */
-export function ewma(samples: { age: number; value: number }[], halfLifeDays = DEFAULT_HALF_LIFE_DAYS): RateEstimate | null {
+export function ewma(
+  samples: { age: number; value: number }[],
+  halfLifeDays = DEFAULT_HALF_LIFE_DAYS,
+): RateEstimate | null {
   if (samples.length === 0) return null;
   let sw = 0;
   let sw2 = 0;
@@ -150,14 +153,21 @@ function daysAt(remaining: number, perDay: number): number | null {
  * Projected completion: now + (T − C) / observedRate. Converging only if the
  * rate moves toward the target. The confidence band uses rate ± 1 SD.
  */
-export function projectCompletion(current: number, target: number, rate: RateEstimate | null, today: DateStr): Projection {
+export function projectCompletion(
+  current: number,
+  target: number,
+  rate: RateEstimate | null,
+  today: DateStr,
+): Projection {
   const remaining = target - current;
   if (remaining === 0) {
     return { converging: true, reached: true, date: today, low: today, high: today, daysToGo: 0 };
   }
-  if (!rate) return { converging: false, reached: false, date: null, low: null, high: null, daysToGo: null };
+  if (!rate)
+    return { converging: false, reached: false, date: null, low: null, high: null, daysToGo: null };
   const mid = daysAt(remaining, rate.perDay);
-  if (mid === null) return { converging: false, reached: false, date: null, low: null, high: null, daysToGo: null };
+  if (mid === null)
+    return { converging: false, reached: false, date: null, low: null, high: null, daysToGo: null };
   const dir = Math.sign(remaining);
   const fast = daysAt(remaining, rate.perDay + dir * rate.sd);
   const slow = daysAt(remaining, rate.perDay - dir * rate.sd);

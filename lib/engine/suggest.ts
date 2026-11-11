@@ -21,15 +21,24 @@ export function suggestDeadline(args: {
   weeklyTarget: number | null;
   plannedWeeklyEffort: number | null;
 }): { date: DateStr; basis: "plan" | "typical" | "effort" } {
-  const gap = args.baseline !== null && args.target !== null ? Math.abs(args.target - args.baseline) : null;
+  const gap =
+    args.baseline !== null && args.target !== null ? Math.abs(args.target - args.baseline) : null;
   if (gap && args.weeklyTarget) {
-    return { date: addDays(args.startDate, Math.ceil((gap / Math.abs(args.weeklyTarget)) * 7)), basis: "plan" };
+    return {
+      date: addDays(args.startDate, Math.ceil((gap / Math.abs(args.weeklyTarget)) * 7)),
+      basis: "plan",
+    };
   }
   const typical = args.unit ? TYPICAL_WEEKLY[args.unit.toLowerCase()] : undefined;
   if (gap && typical) {
     // More weekly effort → a little faster, within reason.
-    const boost = args.plannedWeeklyEffort ? Math.min(Math.max(Math.sqrt(args.plannedWeeklyEffort / 5), 0.75), 1.5) : 1;
-    return { date: addDays(args.startDate, Math.ceil((gap / (typical * boost)) * 7)), basis: "typical" };
+    const boost = args.plannedWeeklyEffort
+      ? Math.min(Math.max(Math.sqrt(args.plannedWeeklyEffort / 5), 0.75), 1.5)
+      : 1;
+    return {
+      date: addDays(args.startDate, Math.ceil((gap / (typical * boost)) * 7)),
+      basis: "typical",
+    };
   }
   const h = Math.max(args.plannedWeeklyEffort ?? 3, 1);
   const weeks = Math.round(12 * Math.sqrt(5 / h));
@@ -45,7 +54,8 @@ export function milestoneTargets(
   let prevDate = start;
   let prevValue = baseline;
   return milestones.map((m) => {
-    if (!m.targetDate || m.thresholdValue === null) return { title: m.title, perWeek: null, perDay: null };
+    if (!m.targetDate || m.thresholdValue === null)
+      return { title: m.title, perWeek: null, perDay: null };
     const days = Math.max((Date.parse(m.targetDate) - Date.parse(prevDate)) / 86_400_000, 1);
     const perDay = (m.thresholdValue - prevValue) / days;
     prevDate = m.targetDate;

@@ -30,7 +30,11 @@ function AddReward({ open, onOpenChange }: { open: boolean; onOpenChange: (v: bo
           className="space-y-3"
           onSubmit={async (e) => {
             e.preventDefault();
-            const r = RewardInputSchema.safeParse({ title, coinCost: Number(cost), emoji: emoji || "🎁" });
+            const r = RewardInputSchema.safeParse({
+              title,
+              coinCost: Number(cost),
+              emoji: emoji || "🎁",
+            });
             if (!r.success) return setError(r.error.issues[0].message);
             await actions.upsertReward(r.data);
             toast.success("Reward added to your shop");
@@ -40,14 +44,35 @@ function AddReward({ open, onOpenChange }: { open: boolean; onOpenChange: (v: bo
         >
           <div className="grid grid-cols-[64px_1fr] gap-3">
             <Field label="Emoji" htmlFor="r-emoji">
-              <Input id="r-emoji" value={emoji} maxLength={4} onChange={(e) => setEmoji(e.target.value)} className="text-center text-xl" />
+              <Input
+                id="r-emoji"
+                value={emoji}
+                maxLength={4}
+                onChange={(e) => setEmoji(e.target.value)}
+                className="text-center text-xl"
+              />
             </Field>
             <Field label="Reward" htmlFor="r-title" error={error}>
-              <Input id="r-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Watch a movie" autoFocus />
+              <Input
+                id="r-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Watch a movie"
+                autoFocus
+              />
             </Field>
           </div>
-          <Field label="Cost in coins" htmlFor="r-cost" hint="You earn half your XP as coins. ~10 logs ≈ 50 coins.">
-            <Input id="r-cost" inputMode="numeric" value={cost} onChange={(e) => setCost(e.target.value)} />
+          <Field
+            label="Cost in coins"
+            htmlFor="r-cost"
+            hint="You earn half your XP as coins. ~10 logs ≈ 50 coins."
+          >
+            <Input
+              id="r-cost"
+              inputMode="numeric"
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+            />
           </Field>
           <Button type="submit" className="w-full">
             Add reward
@@ -64,7 +89,9 @@ export default function RewardsPage() {
   const lp = levelProgress(data.profile.xp);
   const owned = new Map(data.userBadges.map((b) => [b.badgeKey, b.earnedAt]));
   const rewards = data.rewards.filter((r) => !r.archived).sort((a, b) => a.coinCost - b.coinCost);
-  const xpLog = [...data.xpEvents].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 12);
+  const xpLog = [...data.xpEvents]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 12);
 
   return (
     <div className="space-y-6">
@@ -72,34 +99,50 @@ export default function RewardsPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="flex items-center gap-4">
-          <ScoreRing value={lp.fraction * 100} size={96} stroke={10} label={`Level ${lp.level} progress`} sublabel="to next" />
+          <ScoreRing
+            value={lp.fraction * 100}
+            size={96}
+            stroke={10}
+            label={`Level ${lp.level} progress`}
+            sublabel="to next"
+          />
           <div>
-            <p className="text-xs text-muted-foreground uppercase">Level</p>
-            <p className="text-4xl font-black tabular">{lp.level}</p>
-            <p className="text-xs text-muted-foreground tabular">
+            <p className="text-muted-foreground text-xs uppercase">Level</p>
+            <p className="tabular text-4xl font-black">{lp.level}</p>
+            <p className="text-muted-foreground tabular text-xs">
               {fmt(data.profile.xp, 0)} XP total · next at {fmt(xpForLevel(lp.level + 1), 0)}
             </p>
           </div>
         </Card>
         <Card>
-          <p className="text-xs text-muted-foreground uppercase">Streak</p>
-          <p className="flex items-center gap-2 text-4xl font-black tabular">
+          <p className="text-muted-foreground text-xs uppercase">Streak</p>
+          <p className="tabular flex items-center gap-2 text-4xl font-black">
             <StreakFlame active={streak.activeToday} size={34} /> {streak.current}
           </p>
-          <p className="text-xs text-muted-foreground">Longest: {streak.longest} days</p>
-          <div className="mt-2 flex items-center gap-1.5 text-sm" aria-label={`${data.profile.streakFreezes} of ${MAX_FREEZES} streak freezes banked`}>
+          <p className="text-muted-foreground text-xs">Longest: {streak.longest} days</p>
+          <div
+            className="mt-2 flex items-center gap-1.5 text-sm"
+            aria-label={`${data.profile.streakFreezes} of ${MAX_FREEZES} streak freezes banked`}
+          >
             {Array.from({ length: MAX_FREEZES }).map((_, i) => (
-              <Snowflake key={i} className={cn("size-5", i < data.profile.streakFreezes ? "text-blue" : "text-surface-3")} aria-hidden />
+              <Snowflake
+                key={i}
+                className={cn(
+                  "size-5",
+                  i < data.profile.streakFreezes ? "text-blue" : "text-surface-3",
+                )}
+                aria-hidden
+              />
             ))}
-            <span className="text-xs text-muted-foreground">freezes · earn 1 per 7-day streak</span>
+            <span className="text-muted-foreground text-xs">freezes · earn 1 per 7-day streak</span>
           </div>
         </Card>
         <Card id="shop">
-          <p className="text-xs text-muted-foreground uppercase">Coins</p>
-          <p className="flex items-center gap-2 text-4xl font-black text-yellow tabular">
+          <p className="text-muted-foreground text-xs uppercase">Coins</p>
+          <p className="text-yellow tabular flex items-center gap-2 text-4xl font-black">
             <Coins className="size-8" aria-hidden /> {fmt(data.profile.coins, 0)}
           </p>
-          <p className="text-xs text-muted-foreground">Spend them on real-life rewards below.</p>
+          <p className="text-muted-foreground text-xs">Spend them on real-life rewards below.</p>
         </Card>
       </div>
 
@@ -113,10 +156,14 @@ export default function RewardsPage() {
             .map((g) => {
               const a = analyses.get(g.id);
               return (
-                <li key={g.id} className="flex items-center justify-between rounded-lg bg-surface-2 px-3 py-2 text-sm">
+                <li
+                  key={g.id}
+                  className="bg-surface-2 flex items-center justify-between rounded-lg px-3 py-2 text-sm"
+                >
                   <span className="truncate">{g.title}</span>
-                  <span className="flex items-center gap-1 font-semibold tabular">
-                    <StreakFlame active={Boolean(a?.streak.activeToday)} size={16} /> {a?.streak.current ?? 0}
+                  <span className="tabular flex items-center gap-1 font-semibold">
+                    <StreakFlame active={Boolean(a?.streak.activeToday)} size={16} />{" "}
+                    {a?.streak.current ?? 0}
                   </span>
                 </li>
               );
@@ -144,17 +191,35 @@ export default function RewardsPage() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold">{r.title}</p>
-                        <p className="flex items-center gap-1 text-sm font-semibold text-yellow tabular">
+                        <p className="text-yellow tabular flex items-center gap-1 text-sm font-semibold">
                           <Coins className="size-4" aria-hidden /> {fmt(r.coinCost, 0)}
                         </p>
                       </div>
-                      <button className="rounded p-1 text-muted-foreground hover:text-red" aria-label={`Remove ${r.title}`} onClick={() => actions.archiveReward(r.id)}>
+                      <button
+                        className="text-muted-foreground hover:text-red rounded p-1"
+                        aria-label={`Remove ${r.title}`}
+                        onClick={() => actions.archiveReward(r.id)}
+                      >
                         <Trash2 className="size-4" />
                       </button>
                     </div>
-                    {!affordable ? <Progress value={data.profile.coins / r.coinCost} color="var(--yellow-fill)" label={`Saving for ${r.title}`} /> : null}
-                    <Button variant={affordable ? "yellow" : "secondary"} disabled={!affordable} onClick={() => actions.redeemReward(r.id)} className="mt-auto">
-                      <Gift /> {affordable ? "Redeem" : `${fmt(r.coinCost - data.profile.coins, 0)} more coins`}
+                    {!affordable ? (
+                      <Progress
+                        value={data.profile.coins / r.coinCost}
+                        color="var(--yellow-fill)"
+                        label={`Saving for ${r.title}`}
+                      />
+                    ) : null}
+                    <Button
+                      variant={affordable ? "yellow" : "secondary"}
+                      disabled={!affordable}
+                      onClick={() => actions.redeemReward(r.id)}
+                      className="mt-auto"
+                    >
+                      <Gift />{" "}
+                      {affordable
+                        ? "Redeem"
+                        : `${fmt(r.coinCost - data.profile.coins, 0)} more coins`}
                     </Button>
                   </Card>
                 </li>
@@ -162,12 +227,17 @@ export default function RewardsPage() {
             })}
           </ul>
         ) : (
-          <EmptyState icon={<Gift />} title="Your shop is empty" body="Add rewards you actually want — a movie night, new shoes — and earn them with coins." action={<Button onClick={() => setAdding(true)}>Add a reward</Button>} />
+          <EmptyState
+            icon={<Gift />}
+            title="Your shop is empty"
+            body="Add rewards you actually want — a movie night, new shoes — and earn them with coins."
+            action={<Button onClick={() => setAdding(true)}>Add a reward</Button>}
+          />
         )}
         {data.redemptions.length ? (
           <div className="mt-4">
-            <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Redemption history</h3>
-            <ul className="divide-y divide-border rounded-lg border border-border text-sm">
+            <h3 className="text-muted-foreground mb-2 text-sm font-semibold">Redemption history</h3>
+            <ul className="divide-border border-border divide-y rounded-lg border text-sm">
               {[...data.redemptions]
                 .sort((a, b) => b.redeemedAt.localeCompare(a.redeemedAt))
                 .map((r) => (
@@ -185,17 +255,28 @@ export default function RewardsPage() {
 
       <section>
         <h2 className="mb-3 text-lg font-bold">
-          Badges <span className="text-sm font-normal text-muted-foreground">{owned.size}/{BADGES.length}</span>
+          Badges{" "}
+          <span className="text-muted-foreground text-sm font-normal">
+            {owned.size}/{BADGES.length}
+          </span>
         </h2>
         <ul className="grid grid-cols-2 gap-3 min-[480px]:grid-cols-3 md:grid-cols-5">
           {BADGES.map((b) => {
             const earned = owned.get(b.key);
             return (
-              <li key={b.key} className={cn("flex flex-col items-center rounded-xl border border-border bg-surface-1 p-3 text-center", !earned && "bg-transparent")}>
+              <li
+                key={b.key}
+                className={cn(
+                  "border-border bg-surface-1 flex flex-col items-center rounded-xl border p-3 text-center",
+                  !earned && "bg-transparent",
+                )}
+              >
                 <BadgeIcon icon={b.icon} tier={b.tier} locked={!earned} />
                 <p className="mt-2 text-sm font-semibold">{b.name}</p>
-                <p className="text-[11px] text-muted-foreground">{b.description}</p>
-                <p className="mt-1 text-[10px] font-medium text-muted-foreground uppercase">{earned ? `Earned ${fmtShortDate(earned.slice(0, 10))}` : "Locked"}</p>
+                <p className="text-muted-foreground text-[11px]">{b.description}</p>
+                <p className="text-muted-foreground mt-1 text-[10px] font-medium uppercase">
+                  {earned ? `Earned ${fmtShortDate(earned.slice(0, 10))}` : "Locked"}
+                </p>
               </li>
             );
           })}
@@ -206,13 +287,21 @@ export default function RewardsPage() {
         <CardHeader>
           <CardTitle>Recent XP</CardTitle>
         </CardHeader>
-        <ul className="divide-y divide-border text-sm">
+        <ul className="divide-border divide-y text-sm">
           {xpLog.map((e) => (
             <li key={e.id} className="flex justify-between py-2">
               <span>{e.reason}</span>
-              <span className={cn("font-semibold tabular", e.amount >= 0 ? "text-yellow" : "text-muted-foreground")}>
+              <span
+                className={cn(
+                  "tabular font-semibold",
+                  e.amount >= 0 ? "text-yellow" : "text-muted-foreground",
+                )}
+              >
                 {e.amount >= 0 ? "+" : ""}
-                {e.amount} XP <span className="text-xs font-normal text-muted-foreground">· {timeAgo(e.createdAt)}</span>
+                {e.amount} XP{" "}
+                <span className="text-muted-foreground text-xs font-normal">
+                  · {timeAgo(e.createdAt)}
+                </span>
               </span>
             </li>
           ))}

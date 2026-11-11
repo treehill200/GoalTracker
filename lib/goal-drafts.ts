@@ -30,19 +30,57 @@ export function blankDraft(method: Method, today: string): GoalDraftInput {
   };
   switch (method) {
     case "single_metric":
-      return { ...base, metrics: [{ name: "", unit: "", baseline: 0, target: 100, weight: 1, aggregation: "latest", weeklyTarget: null, isKey: true }] };
+      return {
+        ...base,
+        metrics: [
+          {
+            name: "",
+            unit: "",
+            baseline: 0,
+            target: 100,
+            weight: 1,
+            aggregation: "latest",
+            weeklyTarget: null,
+            isKey: true,
+          },
+        ],
+      };
     case "milestones":
       return {
         ...base,
         milestoneWeight: 1,
-        milestones: [1, 2, 3].map((n) => ({ title: "", targetDate: addDays(today, n * 30), weight: 1, metricIndex: null, thresholdValue: null })),
+        milestones: [1, 2, 3].map((n) => ({
+          title: "",
+          targetDate: addDays(today, n * 30),
+          weight: 1,
+          metricIndex: null,
+          thresholdValue: null,
+        })),
       };
     case "weighted":
       return {
         ...base,
         metrics: [
-          { name: "", unit: "", baseline: 0, target: 100, weight: 0.6, aggregation: "latest", weeklyTarget: null, isKey: true },
-          { name: "", unit: "sessions", baseline: 0, target: 3, weight: 0.4, aggregation: "weekly_sum", weeklyTarget: null, isKey: false },
+          {
+            name: "",
+            unit: "",
+            baseline: 0,
+            target: 100,
+            weight: 0.6,
+            aggregation: "latest",
+            weeklyTarget: null,
+            isKey: true,
+          },
+          {
+            name: "",
+            unit: "sessions",
+            baseline: 0,
+            target: 3,
+            weight: 0.4,
+            aggregation: "weekly_sum",
+            weeklyTarget: null,
+            isKey: false,
+          },
         ],
       };
     default:
@@ -51,7 +89,10 @@ export function blankDraft(method: Method, today: string): GoalDraftInput {
 }
 
 export function draftFromAi(plan: AiBreakdown, today: string): GoalDraftInput {
-  const keyIndex = Math.max(0, plan.metrics.findIndex((m) => m.isKey));
+  const keyIndex = Math.max(
+    0,
+    plan.metrics.findIndex((m) => m.isKey),
+  );
   return {
     title: plan.title,
     description: plan.summary,
@@ -67,7 +108,10 @@ export function draftFromAi(plan: AiBreakdown, today: string): GoalDraftInput {
     taskWeight: 0,
     reminderTime: null,
     color: null,
-    metrics: plan.metrics.map((m, i) => ({ ...m, isKey: i === keyIndex && m.aggregation !== "weekly_sum" })),
+    metrics: plan.metrics.map((m, i) => ({
+      ...m,
+      isKey: i === keyIndex && m.aggregation !== "weekly_sum",
+    })),
     milestones: plan.milestones.map((m) => ({
       title: m.title,
       targetDate: addDays(today, Math.round(m.weeksFromStart * 7)),
@@ -105,8 +149,28 @@ export function draftFromBundle(b: GoalBundle): GoalDraftInput {
     taskWeight: b.goal.taskWeight,
     reminderTime: b.goal.reminderTime,
     color: b.goal.color,
-    metrics: b.metrics.map((m) => ({ id: m.id, name: m.name, unit: m.unit, baseline: m.baseline, target: m.target, weight: m.weight, aggregation: m.aggregation, weeklyTarget: m.weeklyTarget, isKey: m.isKey })),
-    milestones: b.milestones.map((m) => ({ id: m.id, completedAt: m.completedAt, title: m.title, targetDate: m.targetDate, weight: m.weight, metricIndex: m.metricId ? (metricIndex.get(m.metricId) ?? null) : null, thresholdValue: m.thresholdValue })),
-    tasks: b.tasks.filter((t) => t.active).map((t) => ({ id: t.id, title: t.title, recurrence: t.recurrence, xpValue: t.xpValue })),
+    metrics: b.metrics.map((m) => ({
+      id: m.id,
+      name: m.name,
+      unit: m.unit,
+      baseline: m.baseline,
+      target: m.target,
+      weight: m.weight,
+      aggregation: m.aggregation,
+      weeklyTarget: m.weeklyTarget,
+      isKey: m.isKey,
+    })),
+    milestones: b.milestones.map((m) => ({
+      id: m.id,
+      completedAt: m.completedAt,
+      title: m.title,
+      targetDate: m.targetDate,
+      weight: m.weight,
+      metricIndex: m.metricId ? (metricIndex.get(m.metricId) ?? null) : null,
+      thresholdValue: m.thresholdValue,
+    })),
+    tasks: b.tasks
+      .filter((t) => t.active)
+      .map((t) => ({ id: t.id, title: t.title, recurrence: t.recurrence, xpValue: t.xpValue })),
   };
 }

@@ -19,7 +19,8 @@ const NUMERIC: Partial<Record<TableName, string[]>> = {
 
 function normalize<T>(table: TableName, row: Record<string, unknown>): T {
   const obj = fromRow<Record<string, unknown>>(row);
-  for (const k of NUMERIC[table] ?? []) if (obj[k] !== null && obj[k] !== undefined) obj[k] = Number(obj[k]);
+  for (const k of NUMERIC[table] ?? [])
+    if (obj[k] !== null && obj[k] !== undefined) obj[k] = Number(obj[k]);
   return obj as T;
 }
 
@@ -38,7 +39,11 @@ export class SupabaseRepository implements Repository {
   }
 
   async loadAll(): Promise<AppData> {
-    const profileRes = await this.sb.from("profiles").select("*").eq("id", this.userId).maybeSingle();
+    const profileRes = await this.sb
+      .from("profiles")
+      .select("*")
+      .eq("id", this.userId)
+      .maybeSingle();
     let profileRow = this.check(profileRes) as Record<string, unknown> | null;
     if (!profileRow) {
       // The signup trigger normally creates this; create it if it is missing.
@@ -48,19 +53,24 @@ export class SupabaseRepository implements Repository {
         display_name: this.email?.split("@")[0] ?? "Goal getter",
         settings: defaultSettings(),
       };
-      profileRow = this.check(await this.sb.from("profiles").upsert(fresh).select("*").single()) as Record<string, unknown>;
+      profileRow = this.check(
+        await this.sb.from("profiles").upsert(fresh).select("*").single(),
+      ) as Record<string, unknown>;
     }
     const profile = fromRow<Profile>(profileRow);
     profile.settings = { ...defaultSettings(), ...(profile.settings ?? {}) };
 
     const tables = await Promise.all(
       TABLE_NAMES.map(async (t) => {
-        const rows = this.check(await this.sb.from(t).select("*").eq("user_id", this.userId)) as Record<string, unknown>[];
+        const rows = this.check(
+          await this.sb.from(t).select("*").eq("user_id", this.userId),
+        ) as Record<string, unknown>[];
         return [t, rows.map((r) => normalize(t, r))] as const;
       }),
     );
     const data = { profile } as AppData;
-    for (const [t, rows] of tables) (data as unknown as Record<string, unknown>)[TABLE_TO_KEY[t]] = rows;
+    for (const [t, rows] of tables)
+      (data as unknown as Record<string, unknown>)[TABLE_TO_KEY[t]] = rows;
     return data;
   }
 
@@ -97,7 +107,10 @@ export class SupabaseRepository implements Repository {
 }
 
 /** Shared view via a SECURITY DEFINER function, so anonymous partners can use share links. */
-export async function fetchSharedView(sb: SupabaseClient, token: string): Promise<SharedView | null> {
+export async function fetchSharedView(
+  sb: SupabaseClient,
+  token: string,
+): Promise<SharedView | null> {
   const { data, error } = await sb.rpc("get_shared_view", { p_token: token });
   if (error) throw new Error(error.message);
   if (!data) return null;
@@ -106,7 +119,14 @@ export async function fetchSharedView(sb: SupabaseClient, token: string): Promis
     partner_name: string | null;
     partnership_id: string;
     level: number;
-    goals: { goal: Record<string, unknown>; metrics: Record<string, unknown>[]; entries: Record<string, unknown>[]; milestones: Record<string, unknown>[]; tasks: Record<string, unknown>[]; completions: Record<string, unknown>[] }[];
+    goals: {
+      goal: Record<string, unknown>;
+      metrics: Record<string, unknown>[];
+      entries: Record<string, unknown>[];
+      milestones: Record<string, unknown>[];
+      tasks: Record<string, unknown>[];
+      completions: Record<string, unknown>[];
+    }[];
     cheers: Record<string, unknown>[];
   };
   return {
@@ -126,7 +146,11 @@ export async function fetchSharedView(sb: SupabaseClient, token: string): Promis
   };
 }
 
-export async function sendCheerRpc(sb: SupabaseClient, token: string, cheer: CheerInput): Promise<void> {
+export async function sendCheerRpc(
+  sb: SupabaseClient,
+  token: string,
+  cheer: CheerInput,
+): Promise<void> {
   const { error } = await sb.rpc("send_cheer", {
     p_token: token,
     p_from_name: cheer.fromName,

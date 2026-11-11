@@ -10,37 +10,126 @@ type TaskLike = Pick<Task, "id" | "title">;
 
 /** Words that mean the same thing for matching purposes. */
 const SYNONYMS: Record<string, string> = {
-  ran: "run", running: "run", jog: "run", jogged: "run", jogging: "run", runs: "run",
-  studied: "study", studying: "study", studies: "study",
-  scored: "score", scoring: "score", got: "score",
-  weighed: "weight", weigh: "weight", weighing: "weight", scale: "weight",
-  saved: "save", saving: "save", savings: "save", deposited: "save",
-  lifted: "gym", lift: "gym", lifting: "gym", workout: "gym", worked: "gym", trained: "gym", training: "gym", session: "gym", sessions: "gym",
-  read: "read", reading: "read", pages: "page",
-  walked: "walk", walking: "walk", steps: "step",
-  slept: "sleep", sleeping: "sleep",
-  practiced: "practice", practicing: "practice",
-  exam: "test", tests: "test",
+  ran: "run",
+  running: "run",
+  jog: "run",
+  jogged: "run",
+  jogging: "run",
+  runs: "run",
+  studied: "study",
+  studying: "study",
+  studies: "study",
+  scored: "score",
+  scoring: "score",
+  got: "score",
+  weighed: "weight",
+  weigh: "weight",
+  weighing: "weight",
+  scale: "weight",
+  saved: "save",
+  saving: "save",
+  savings: "save",
+  deposited: "save",
+  lifted: "gym",
+  lift: "gym",
+  lifting: "gym",
+  workout: "gym",
+  worked: "gym",
+  trained: "gym",
+  training: "gym",
+  session: "gym",
+  sessions: "gym",
+  read: "read",
+  reading: "read",
+  pages: "page",
+  walked: "walk",
+  walking: "walk",
+  steps: "step",
+  slept: "sleep",
+  sleeping: "sleep",
+  practiced: "practice",
+  practicing: "practice",
+  exam: "test",
+  tests: "test",
   hit: "hit",
-  swam: "swim", swimming: "swim",
-  biked: "bike", cycled: "bike", cycling: "bike", rode: "bike",
-  meditated: "meditate", meditation: "meditate",
+  swam: "swim",
+  swimming: "swim",
+  biked: "bike",
+  cycled: "bike",
+  cycling: "bike",
+  rode: "bike",
+  meditated: "meditate",
+  meditation: "meditate",
 };
 
-const STOP = new Set(["i", "a", "an", "the", "on", "my", "of", "to", "for", "and", "did", "do", "today", "this", "morning", "at", "in", "was", "had", "per", "week", "day", "daily", "with", "went", "full", "goal", "1", "times", "x"]);
+const STOP = new Set([
+  "i",
+  "a",
+  "an",
+  "the",
+  "on",
+  "my",
+  "of",
+  "to",
+  "for",
+  "and",
+  "did",
+  "do",
+  "today",
+  "this",
+  "morning",
+  "at",
+  "in",
+  "was",
+  "had",
+  "per",
+  "week",
+  "day",
+  "daily",
+  "with",
+  "went",
+  "full",
+  "goal",
+  "1",
+  "times",
+  "x",
+]);
 
 const DURATION_UNITS: Record<string, number> = {
   // value in minutes
-  min: 1, mins: 1, minute: 1, minutes: 1, m: 1,
-  h: 60, hr: 60, hrs: 60, hour: 60, hours: 60,
+  min: 1,
+  mins: 1,
+  minute: 1,
+  minutes: 1,
+  m: 1,
+  h: 60,
+  hr: 60,
+  hrs: 60,
+  hour: 60,
+  hours: 60,
 };
 const DISTANCE_UNITS: Record<string, number> = {
   // value in km
-  km: 1, k: 1, kms: 1, kilometers: 1, kilometres: 1,
-  mi: 1.609344, mile: 1.609344, miles: 1.609344,
-  m: 0.001, meters: 0.001, metres: 0.001,
+  km: 1,
+  k: 1,
+  kms: 1,
+  kilometers: 1,
+  kilometres: 1,
+  mi: 1.609344,
+  mile: 1.609344,
+  miles: 1.609344,
+  m: 0.001,
+  meters: 0.001,
+  metres: 0.001,
 };
-const WEIGHT_UNITS: Record<string, number> = { lb: 1, lbs: 1, pound: 1, pounds: 1, kg: 2.20462, kgs: 2.20462 };
+const WEIGHT_UNITS: Record<string, number> = {
+  lb: 1,
+  lbs: 1,
+  pound: 1,
+  pounds: 1,
+  kg: 2.20462,
+  kgs: 2.20462,
+};
 
 export function stem(word: string): string {
   const w = word.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -151,7 +240,11 @@ export function parseLogText(text: string, metrics: MetricLike[], tasks: TaskLik
         // also log it to a metric unless the metric clearly matches the unit.
         if (matched && !(n.unit && metricTokens(m).has(stem(n.unit)))) continue;
         if (result.entries.some((e) => e.metricId === m.id)) continue;
-        result.entries.push({ metricId: m.id, value: Math.round(value * 100) / 100, label: m.name });
+        result.entries.push({
+          metricId: m.id,
+          value: Math.round(value * 100) / 100,
+          label: m.name,
+        });
         metricMatched = true;
         break;
       }

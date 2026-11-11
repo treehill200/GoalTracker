@@ -13,7 +13,18 @@ import { ParsedLogSchema } from "@/lib/data/schemas";
 
 const Body = z.object({
   text: z.string().trim().min(1).max(1000),
-  metrics: z.array(z.object({ id: z.string(), name: z.string(), unit: z.string(), baseline: z.number(), target: z.number(), aggregation: z.enum(["latest", "sum_total", "weekly_sum"]) })).max(50),
+  metrics: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        unit: z.string(),
+        baseline: z.number(),
+        target: z.number(),
+        aggregation: z.enum(["latest", "sum_total", "weekly_sum"]),
+      }),
+    )
+    .max(50),
   tasks: z.array(z.object({ id: z.string(), title: z.string() })).max(50),
 });
 
@@ -23,7 +34,8 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   const { text, metrics, tasks } = parsed.data;
-  const fallback = () => NextResponse.json({ source: "regex", parsed: parseLogText(text, metrics, tasks) });
+  const fallback = () =>
+    NextResponse.json({ source: "regex", parsed: parseLogText(text, metrics, tasks) });
   const model = getModel();
   if (!model) return fallback();
   try {
@@ -42,8 +54,12 @@ Put text you could not map in "unmatched". Never invent numbers.`,
     return NextResponse.json({
       source: "ai",
       parsed: {
-        entries: output.entries.filter((e) => metricIds.has(e.metricId)).map((e) => ({ ...e, label: metrics.find((m) => m.id === e.metricId)!.name })),
-        completions: output.completions.filter((c) => taskIds.has(c.taskId)).map((c) => ({ ...c, label: tasks.find((t) => t.id === c.taskId)!.title })),
+        entries: output.entries
+          .filter((e) => metricIds.has(e.metricId))
+          .map((e) => ({ ...e, label: metrics.find((m) => m.id === e.metricId)!.name })),
+        completions: output.completions
+          .filter((c) => taskIds.has(c.taskId))
+          .map((c) => ({ ...c, label: tasks.find((t) => t.id === c.taskId)!.title })),
         unmatched: output.unmatched,
       },
     });

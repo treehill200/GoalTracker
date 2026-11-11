@@ -42,7 +42,12 @@ export interface AdjustInput {
   originalWeekly: number | null;
 }
 
-export function originalWeeklyTarget(baseline: number, target: number, startDate: DateStr, deadline: DateStr): number {
+export function originalWeeklyTarget(
+  baseline: number,
+  target: number,
+  startDate: DateStr,
+  deadline: DateStr,
+): number {
   const weeks = Math.max(diffDays(deadline, startDate) / 7, 1 / 7);
   return (target - baseline) / weeks;
 }
@@ -52,9 +57,11 @@ export function computeAdjustment(input: AdjustInput): AdjustResult {
   const dir = Math.sign(target - baseline);
   if (dir === 0) return { kind: "none", reason: "Target equals baseline." };
   const gap = target - current;
-  if (Math.sign(gap) !== dir || gap === 0) return { kind: "none", reason: "Target already reached." };
+  if (Math.sign(gap) !== dir || gap === 0)
+    return { kind: "none", reason: "Target already reached." };
   const daysLeft = diffDays(deadline, today);
-  const original = input.originalWeekly ?? originalWeeklyTarget(baseline, target, input.startDate, deadline);
+  const original =
+    input.originalWeekly ?? originalWeeklyTarget(baseline, target, input.startDate, deadline);
   const previous = input.currentWeekly ?? original;
   const capWeekly = original * ADJUST_CAP;
   if (daysLeft <= 0) {
@@ -71,7 +78,13 @@ export function computeAdjustment(input: AdjustInput): AdjustResult {
   const remainingWeeks = daysLeft / 7;
   const required = gap / remainingWeeks;
   if (Math.abs(required) <= Math.abs(capWeekly) + 1e-9) {
-    return { kind: "adjusted", originalWeekly: original, previousWeekly: previous, newWeekly: required, remainingWeeks };
+    return {
+      kind: "adjusted",
+      originalWeekly: original,
+      previousWeekly: previous,
+      newWeekly: required,
+      remainingWeeks,
+    };
   }
   return {
     kind: "choice",

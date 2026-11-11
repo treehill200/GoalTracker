@@ -10,7 +10,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "Goal Tracker", template: "%s · Goal Tracker" },
-  description: "Turn big, vague goals into numbers, track them, predict your finish date, and stay motivated with AI coaches.",
+  description:
+    "Turn big, vague goals into numbers, track them, predict your finish date, and stay motivated with AI coaches.",
   applicationName: "Goal Tracker",
   appleWebApp: { capable: true, title: "Goal Tracker", statusBarStyle: "black-translucent" },
   icons: {
@@ -33,12 +34,22 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const features = publicFeatures();
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} dark h-full antialiased`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${GeistSans.variable} ${GeistMono.variable} dark h-full antialiased`}
+      suppressHydrationWarning
+    >
       <body className="min-h-full">
         <FeaturesProvider value={features}>
           <ThemeProvider>
             {children}
-            <Toaster theme="dark" position="top-center" richColors closeButton toastOptions={{ className: "!bg-surface-2 !border-border !text-foreground" }} />
+            <Toaster
+              theme="dark"
+              position="top-center"
+              richColors
+              closeButton
+              toastOptions={{ className: "!bg-surface-2 !border-border !text-foreground" }}
+            />
             <ServiceWorkerRegister />
           </ThemeProvider>
         </FeaturesProvider>
