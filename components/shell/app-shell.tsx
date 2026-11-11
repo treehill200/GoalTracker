@@ -14,6 +14,7 @@ import { MAIN_NAV, MORE_NAV, isActive } from "./nav";
 import { QuickLog } from "@/components/log/quick-log";
 import { CelebrationLayer } from "@/components/celebrations";
 import { StreakFlame } from "@/components/streak-flame";
+import { WebhookInbox } from "./webhook-inbox";
 
 function LevelChip() {
   const { data } = useStore();
@@ -181,6 +182,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <BottomTabs pathname={pathname} />
       <CelebrationLayer />
       <MotionPreference />
+      <WebhookInbox />
     </div>
   );
 }

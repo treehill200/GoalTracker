@@ -223,6 +223,8 @@ export function StoreProvider({ children, fallback }: { children: React.ReactNod
 
   const actions = useMemo(
     () =>
+      // The getters read the latest data from a ref; they only run in event handlers, never during render.
+      // eslint-disable-next-line react-hooks/refs
       createActions({
         get: () => dataRef.current!,
         commit,
@@ -289,6 +291,7 @@ export function StoreProvider({ children, fallback }: { children: React.ReactNod
       </div>
     );
   }
+  // eslint-disable-next-line react-hooks/refs -- `value` is memoized state; the ref is only read inside actions
   if (!value) return <>{fallback}</>;
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>;
 }

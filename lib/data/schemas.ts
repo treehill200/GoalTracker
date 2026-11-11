@@ -9,6 +9,7 @@ const finite = z.number().refine(Number.isFinite, "Must be a number");
 
 export const MetricDraftSchema = z
   .object({
+    id: z.string().optional(),
     name: z.string().trim().min(1, "Name the metric").max(120),
     unit: z.string().trim().max(30).default(""),
     baseline: finite,
@@ -21,6 +22,8 @@ export const MetricDraftSchema = z
   .refine((m) => m.aggregation !== "weekly_sum" || m.target > 0, { message: "Weekly target must be above 0", path: ["target"] });
 
 export const MilestoneDraftSchema = z.object({
+  id: z.string().optional(),
+  completedAt: z.string().nullable().optional(),
   title: z.string().trim().min(1).max(160),
   targetDate: date.nullable().default(null),
   weight: z.number().min(0).max(100).default(1),
@@ -30,6 +33,7 @@ export const MilestoneDraftSchema = z.object({
 });
 
 export const TaskDraftSchema = z.object({
+  id: z.string().optional(),
   title: z.string().trim().min(1).max(120),
   recurrence: RecurrenceSchema,
   xpValue: z.number().int().min(0).max(500).default(15),

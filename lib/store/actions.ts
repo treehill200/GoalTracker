@@ -151,7 +151,6 @@ export function createActions(ctx: ActionContext) {
   }
 
   const goalOfMetric = (d: AppData, metricId: string) => d.metrics.find((m) => m.id === metricId)?.goalId ?? null;
-  const goalOfTask = (d: AppData, taskId: string) => d.tasks.find((t) => t.id === taskId)?.goalId ?? null;
 
   const actions = {
     // ------------------------------------------------------------ logging
@@ -302,6 +301,66 @@ export function createActions(ctx: ActionContext) {
       if (!tx.data.profile.settings.focusGoalId) tx.add(profileOp({ settings: { ...tx.data.profile.settings, focusGoalId: goalId } }));
       await tx.done();
       return goalId;
+    },
+
+    /** Save an edited goal: keeps ids (and history) of existing metrics/milestones/tasks. */
+    async updateGoalFromDraft(goalId: string, input: GoalDraftInput) {
+      const draft = GoalDraftSchema.parse(input);
+      const tx = new Tx();
+      const u = tx.data.profile.id;
+      const now = nowIso();
+      const goal = tx.data.goals.find((g) => g.id === goalId);
+      if (!goal) return;
+      tx.add(
+        updateOp("goals", goalId, {
+          title: draft.title,
+          description: draft.description,
+          category: draft.category,
+          startDate: draft.startDate,
+          deadline: draft.isOpenEnded ? null : draft.deadline,
+          isOpenEnded: draft.isOpenEnded,
+          suggestedDeadline: draft.suggestedDeadline,
+          plannedWeeklyEffort: draft.plannedWeeklyEffort,
+          expectedCurve: draft.expectedCurve,
+          milestoneWeight: draft.milestones.length ? draft.milestoneWeight : 0,
+          taskWeight: draft.tasks.length ? draft.taskWeight : 0,
+          reminderTime: draft.reminderTime,
+        }),
+      );
+      const oldMetrics = tx.data.metrics.filter((m) => m.goalId === goalId);
+      const metricIds = draft.metrics.map((m) => m.id ?? uid());
+      for (const old of oldMetrics) if (!metricIds.includes(old.id)) tx.add(removeOp("metrics", old.id));
+      draft.metrics.forEach((m, i) => {
+        const prev = oldMetrics.find((o) => o.id === metricIds[i]);
+        tx.add(
+          insertOp("metrics", {
+            id: metricIds[i], userId: u, goalId, name: m.name, unit: m.unit,
+            baseline: m.aggregation === "weekly_sum" ? 0 : m.baseline, target: m.target,
+            direction: m.target >= m.baseline ? "increase" : "decrease", weight: m.weight, aggregation: m.aggregation,
+            source: prev?.source ?? "manual", weeklyTarget: m.weeklyTarget, isKey: m.isKey, createdAt: prev?.createdAt ?? now,
+          }),
+        );
+      });
+      const oldMs = tx.data.milestones.filter((m) => m.goalId === goalId);
+      const msIds = draft.milestones.map((m) => m.id ?? uid());
+      for (const old of oldMs) if (!msIds.includes(old.id)) tx.add(removeOp("milestones", old.id));
+      draft.milestones.forEach((m, i) => {
+        tx.add(
+          insertOp("milestones", {
+            id: msIds[i], userId: u, goalId, title: m.title, targetDate: m.targetDate, order: i, weight: m.weight,
+            completedAt: m.completedAt ?? null, metricId: m.metricIndex !== null ? (metricIds[m.metricIndex] ?? null) : null, thresholdValue: m.thresholdValue,
+          }),
+        );
+      });
+      const oldTasks = tx.data.tasks.filter((t) => t.goalId === goalId);
+      const taskIds = draft.tasks.map((t) => t.id ?? uid());
+      for (const old of oldTasks) if (!taskIds.includes(old.id)) tx.add(removeOp("tasks", old.id));
+      draft.tasks.forEach((t, i) => {
+        const prev = oldTasks.find((o) => o.id === taskIds[i]);
+        tx.add(insertOp("tasks", { id: taskIds[i], userId: u, goalId, title: t.title, recurrence: t.recurrence, xpValue: t.xpValue, active: true, createdAt: prev?.createdAt ?? now }));
+      });
+      if (draft.metrics.length) tx.goalEffects(goalId);
+      await tx.done();
     },
 
     async updateGoal(id: string, patch: Partial<Goal>) {
@@ -500,6 +559,9 @@ export function createActions(ctx: ActionContext) {
       const row: CoachMessage = { id: uid(), userId: d.profile.id, createdAt: nowIso(), ...m };
       await ctx.commit([insertOp("coach_messages", row)]);
       return row;
+    },
+    async updateCoachMessage(id: string, content: string) {
+      await ctx.commit([updateOp("coach_messages", id, { content })]);
     },
     async clearChat() {
       const d = ctx.get();
