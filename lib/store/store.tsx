@@ -21,7 +21,7 @@ import type { StreakInfo } from "@/lib/engine/streaks";
 import { useFeatures } from "@/lib/features";
 import { LocalRepository } from "@/lib/data/local";
 import { applyOps, type Op } from "@/lib/data/ops";
-import { Outbox } from "@/lib/data/outbox";
+import { countLogs, Outbox } from "@/lib/data/outbox";
 import { isNetworkError, type Repository } from "@/lib/data/repository";
 import { SupabaseRepository } from "@/lib/data/supabase";
 import { bundleFor, type AppData, type CoachMood } from "@/lib/data/types";
@@ -178,7 +178,7 @@ export function StoreProvider({
         }
         if (cancelled) return;
         outbox.onChange(setPending);
-        setPending(queued.length);
+        setPending(countLogs(queued));
         setAll(loaded);
         setStatus({ state: "ready", repo, outbox });
         if (navigator.onLine) outbox.flush(repo).catch(() => undefined);

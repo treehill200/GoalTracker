@@ -3,7 +3,7 @@
  * IndexedDB and replayed in order when the browser comes back online.
  */
 import { openDB, type IDBPDatabase } from "idb";
-import type { Op } from "./ops";
+import { LOG_TABLES, type Op } from "./ops";
 import { isNetworkError, type Repository } from "./repository";
 import type { AppData } from "./types";
 
@@ -38,8 +38,9 @@ export class Outbox {
     return () => this.listeners.delete(fn);
   }
 
+  /** Listeners get the number of queued *logs* (entries, task completions, check-ins). */
   private async emit() {
-    const n = (await this.all()).length;
+    const n = countLogs(await this.all());
     this.listeners.forEach((l) => l(n));
   }
 
@@ -95,4 +96,10 @@ export class Outbox {
     if (!db) return null;
     return ((await db.get("snapshots", this.scope)) as AppData | undefined) ?? null;
   }
+}
+
+export function countLogs(items: { op: Op }[]): number {
+  return items.filter(
+    (i) => (i.op.kind === "insert" || i.op.kind === "remove") && LOG_TABLES.includes(i.op.table),
+  ).length;
 }

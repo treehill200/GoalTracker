@@ -82,7 +82,7 @@ function Header() {
             role="status"
           >
             <CloudOff className="size-3.5" aria-hidden />
-            {pending > 0 ? `${pending} queued` : "Offline"}
+            {pending > 0 ? `${pending} log${pending === 1 ? "" : "s"} queued` : "Offline"}
           </span>
         ) : null}
         <span
