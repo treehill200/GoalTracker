@@ -15,8 +15,7 @@
     "test:e2e": "playwright test",
     "vapid:generate": "node scripts/generate-vapid-keys.mjs",
     "icons:generate": "node scripts/generate-icons.mjs",
-    "seed:sql": "tsx scripts/generate-seed-sql.ts",
-    "db:test-rls": "bash scripts/test-rls-postgres.sh"
+    "seed:sql": "tsx scripts/generate-seed-sql.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.102",

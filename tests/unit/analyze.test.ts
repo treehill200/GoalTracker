@@ -46,7 +46,7 @@ describe("seed goal B (muscle): open-ended and on track", () => {
       expect(a.isOpenEnded).toBe(true);
       expect(a.statusBasis).toBe("momentum");
       expect(a.momentum!).toBeGreaterThan(0.8);
-      expect(a.softDeadline).toBe(addDays(TODAY, -42 + 280));
+      expect(a.softDeadline).toBe(addDays(today, -42 + 280));
       expect(a.projection.date).not.toBeNull();
     });
   }

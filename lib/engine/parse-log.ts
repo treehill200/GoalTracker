@@ -113,7 +113,9 @@ export function parseLogText(text: string, metrics: MetricLike[], tasks: TaskLik
       if (tt.length === 0) continue;
       const hits = tt.filter((w) => ct.has(w)).length;
       const score = hits / tt.length;
-      if (hits >= Math.min(2, tt.length) && score >= 0.5 && (!bestTask || score > bestTask.score)) bestTask = { task: t, score };
+      // Most of the task's words, or its leading verb ("Lift weights" ← "went to the gym").
+      const qualifies = (hits >= Math.min(2, tt.length) && score >= 0.5) || ct.has(tt[0]);
+      if (qualifies && (!bestTask || score > bestTask.score)) bestTask = { task: t, score };
     }
     if (bestTask && !usedTasks.has(bestTask.task.id)) {
       usedTasks.add(bestTask.task.id);
